@@ -12,7 +12,60 @@ export type Post = {
   repostCount?: number
 }
 
-export const posts: Post[] = [
+export type PostError = {
+  message: string
+}
+
+/**
+ * Mapper qui transforme les données reçues du backend vers une entité Post
+ * @param backendData Structure reçue du backend
+ * @returns Entité Post formatée pour le frontend
+ */
+export const mapBackendDataToPost = (backendData: {
+  id: string;
+  authorName: string;
+  authorHandle: string;
+  content: string;
+  createdAt: string;
+}): Post => {
+  // Récupérer l'avatar en fonction du handle du Pokémon
+  const getPokemonAvatar = (handle: string): string => {
+    const pokemonIds: Record<string, string> = {
+      pikachu: '25',
+      salameche: '4',
+      bulbizarre: '1',
+      carapuce: '7',
+      rondoudou: '39'
+    };
+
+    const id = pokemonIds[handle] || '25'; // Défaut sur Pikachu si handle inconnu
+    return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+  };
+
+  // Génère un nombre aléatoire entre 0 et 10 inclus
+  const getRandomCount = (): number => {
+    return Math.floor(Math.random() * 11); // 0 à 10 inclus
+  };
+
+  return {
+    id: backendData.id,
+    author: {
+      name: backendData.authorName,
+      handle: backendData.authorHandle,
+      avatar: getPokemonAvatar(backendData.authorHandle)
+    },
+    content: backendData.content,
+    createdAt: backendData.createdAt,
+    likeCount: getRandomCount(),
+    replyCount: getRandomCount(),
+    repostCount: getRandomCount()
+  };
+};
+
+export const posts: (Post | PostError)[] = [
+  {
+    message: "Ohoh",
+  },
   {
     id: '1',
     author: { name: 'Pikachu', handle: 'pikachu', avatar: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png' },
