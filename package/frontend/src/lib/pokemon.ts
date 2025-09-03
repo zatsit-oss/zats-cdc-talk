@@ -1,0 +1,87 @@
+export const getRandomPokemon = () => {
+  const pokemons = [
+    {
+      name: 'Pikachu',
+      handle: 'pikachu',
+      avatar: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png',
+    },
+    {
+      name: 'Salamèche',
+      handle: 'salameche',
+      avatar: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png',
+    },
+    {
+      name: 'Bulbizarre',
+      handle: 'bulbizarre',
+      avatar: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png',
+    },
+    {
+      name: 'Carapuce',
+      handle: 'carapuce',
+      avatar: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png',
+    },
+    {
+      name: 'Rondoudou',
+      handle: 'rondoudou',
+      avatar: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/39.png',
+    },
+  ]
+
+  const randomIndex = Math.floor(Math.random() * pokemons.length)
+  return pokemons[randomIndex]
+}
+
+export const pokemonPostPhrases = [
+    "Je suis prêt à électriser la journée de tout le monde ! ⚡",
+    "Rien de tel qu'une bonne sieste après un combat intense. 😴",
+    "J'ai trouvé une baie délicieuse aujourd'hui, quelle chance ! 🍓",
+    "Le soleil est parfait pour recharger mes pouvoirs solaires. ☀️",
+    "Je viens de perfectionner mon attaque Hydrocanon, attention à vous ! 🌊",
+    "Quelqu'un veut faire une course ? Je suis imbattable en vitesse ! 🏃‍♂️",
+    "J'adore explorer de nouvelles grottes, on y trouve toujours des surprises. 🪨",
+    "Rien ne vaut un bon entraînement pour rester au top de ma forme. 💪",
+    "Je viens de rencontrer un nouveau dresseur, il a l'air sympa ! 🤝",
+    "Les étoiles sont magnifiques ce soir, parfaites pour un peu de méditation. ✨",
+    "Je viens de maîtriser une nouvelle capacité, je suis trop fier ! 🎉",
+    "Les baies Oran sont mes préférées, et vous ? 🍊",
+    "J'ai croisé un groupe de Pokémon sauvages, quelle aventure ! 🌳",
+    "Rien de tel qu'un bon bain dans une source chaude après une longue journée. ♨️",
+    "Je suis prêt pour un combat, qui veut relever le défi ? ⚔️",
+    "Les nuages ressemblent à des Pokémon aujourd'hui, c'est drôle ! ☁️",
+    "Je viens de trouver un objet rare, quelle découverte incroyable ! 🪙",
+    "Les montagnes sont magnifiques, parfaites pour une randonnée. 🏔️",
+    "Je viens de rencontrer un Rondoudou, quelle belle voix ! 🎤",
+    "Les éclairs illuminent le ciel, c'est mon moment préféré. 🌩️",
+    "Je viens de perfectionner mon attaque Lance-Flammes, attention ! 🔥",
+    "Les fleurs sont magnifiques aujourd'hui, parfaites pour un pique-nique. 🌸",
+    "Je viens de croiser un Salamèche, il est super rapide ! 🦎",
+    "Les vagues sont parfaites pour surfer aujourd'hui. 🏄‍♂️",
+    "Je viens de trouver un trésor enfoui, quelle chance ! 🪙",
+    "Les forêts sont pleines de mystères, j'adore m'y promener. 🌲",
+    "Je viens de croiser un Pikachu, il est trop mignon ! ⚡",
+    "Les étoiles filantes sont magnifiques ce soir, faites un vœu ! 🌠",
+    "Je viens de perfectionner mon attaque Psyko, quelle puissance ! 🌀",
+    "Les rivières sont parfaites pour pêcher aujourd'hui. 🎣",
+    "Je viens de rencontrer un Bulbizarre, il adore les plantes ! 🌱",
+    "Les volcans sont impressionnants, mais un peu dangereux. 🌋",
+    "Je viens de croiser un Carapuce, il adore nager ! 🐢",
+    "Les plaines sont parfaites pour courir à toute vitesse. 🏞️",
+    "Je viens de trouver une pierre évolutive, quelle découverte ! 💎",
+    "Les grottes sont pleines de mystères, j'adore les explorer. 🕯️",
+    "Je viens de croiser un Dracaufeu, il est impressionnant ! 🐉",
+    "Les éclairs illuminent le ciel, c'est magnifique. ⚡",
+    "Je viens de perfectionner mon attaque Tonnerre, quelle puissance ! ⚡",
+    "Les lacs sont parfaits pour se détendre aujourd'hui. 🏞️",
+    "Je viens de rencontrer un Evoli, il est adorable ! 🦊",
+    "Les champs sont parfaits pour jouer avec mes amis Pokémon. 🌾",
+    "Je viens de croiser un Ronflex, il adore dormir ! 💤",
+    "Les montagnes enneigées sont magnifiques, mais glaciales. ❄️",
+    "Je viens de trouver une baie rare, quelle chance ! 🍇",
+    "Les forêts tropicales sont pleines de vie, c'est incroyable. 🌴",
+    "Je viens de croiser un Magicarpe, il est très énergique ! 🐟",
+    "Les couchers de soleil sont magnifiques, parfaits pour se reposer. 🌅",
+    "Je viens de perfectionner mon attaque Charge, je suis prêt ! ⚡",
+    "Les cascades sont impressionnantes, j'adore les observer. 🌊",
+    "Je viens de rencontrer un Fantominus, il est mystérieux ! 👻",
+]
+
