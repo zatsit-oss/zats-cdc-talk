@@ -1,0 +1,23 @@
+services:
+  postgresql:
+    image: postgres:14
+    hostname: postgresql
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: "pokesky"
+      POSTGRES_USER: "pikachu"
+      POSTGRES_PASSWORD: "zatsit"
+      POSTGRES_HOST_AUTH_METHOD: "trust"
+    ports:
+      - "5434:5432"
+
+
+  # adminer:
+  #   image: adminer
+  #   restart: always
+  #   ports:
+  #     - 8999:8080
+volumes:
+  pg_data: {}
+  # adminer_data: {}
