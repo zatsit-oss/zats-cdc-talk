@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { getRandomPokemon, pokemonPostPhrases } from '../lib/pokemon'
+import { publishPostCreationEvent } from '../lib/kafkaService'
 
 interface CreatePostProps {
   onCreate: (content: string, selectedPokemon: { name: string; handle: string; avatar: string }) => void
@@ -43,9 +44,25 @@ export const CreatePost: React.FC<CreatePostProps> = ({ onCreate }) => {
     setNewPostContent(randomPhrase)
   }
 
-  const handleCreatePost = () => {
+  const handleCreatePost = async () => {
     if (!newPostContent.trim()) return
     onCreate(newPostContent, selectedPokemon)
+
+    try {
+      await publishPostCreationEvent({
+        id: selectedPokemon.handle,
+        author: {
+          name: selectedPokemon.name,
+          handle: selectedPokemon.handle
+        },
+        content: newPostContent,
+        createdAt: new Date().toISOString()
+      })
+      console.log('Post creation event published successfully')
+    } catch (error) {
+      console.error('Failed to publish post creation event:', error)
+    }
+
     const randomPhrase = pokemonPostPhrases[Math.floor(Math.random() * pokemonPostPhrases.length)]
     setNewPostContent(randomPhrase)
   }
