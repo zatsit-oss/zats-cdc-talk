@@ -54,5 +54,5 @@ export const emitToClients = (channel: string, data: any) => {
 		return;
 	}
 	console.log("🚀 ~ emitToClients ~ data:", data);
-	io.to(channel).emit("dataUpdate", data);
+	io.to(channel).emit("dataUpdate", data ?? []);
 };

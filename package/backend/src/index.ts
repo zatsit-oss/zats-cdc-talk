@@ -72,15 +72,18 @@ async function handleFrontendAction(payload: EachMessagePayload) {
 		console.log("Message reçu du topic 'post-creation'", payload);
 
 		// Transformer les données pour correspondre à notre modèle de base de données
-		const postData = {
-			id: action.id,
-			authorName: action.author.name,
-			authorHandle: action.author.handle,
-			content: action.content,
-			createdAt: action.createdAt,
-		};
+		// const postData = {
+		// 	id: action.id,
+		// 	authorName: action.author.name,
+		// 	authorHandle: action.author.handle,
+		// 	content: action.content,
+		// 	createdAt: action.createdAt,
+		// };
 
-		await dbActionService.create(Post, postData);
+		// await dbActionService.create(Post, postData);
+
+		dbActionService.execute(action);
+		dbQueryService.execute(action.id);
 
 		// switch (action.type) {
 		// 	case "CREATE_POST":
@@ -97,9 +100,9 @@ async function handleFrontendAction(payload: EachMessagePayload) {
 		// }
 
 		// Envoyer les données mises à jour au frontend
-		const posts = await dbQueryService.findMany(Post);
-		console.log("🚀 ~ handleFrontendAction ~ posts:", posts);
-		dbQueryService.sendToFrontend("posts", posts);
+		// const posts = await dbQueryService.findMany(Post);
+		// console.log("🚀 ~ handleFrontendAction ~ posts:", posts);
+		// dbQueryService.sendToFrontend("posts", posts);
 	} catch (error) {
 		console.error("Erreur lors du traitement de l'action Kafka:", error);
 	}

@@ -34,16 +34,16 @@ export default function App() {
 
 				<Feed />
 
-				{receivedPosts.length > 0 && (
+				{
 					<div className="mt-8 p-4 bg-white rounded-lg shadow">
 						<h2 className="text-xl font-semibold mb-4">
-							Posts reçus du backend (via Socket.IO)
+							Messages reçus du backend (via Socket.IO)
 						</h2>
 						<pre className="bg-gray-100 p-4 rounded overflow-auto max-h-96">
 							{JSON.stringify(receivedPosts, null, 2)}
 						</pre>
 					</div>
-				)}
+				}
 			</div>
 		</div>
 	);
