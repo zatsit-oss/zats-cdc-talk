@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Feed from "./pages/Feed";
+// Correction de l'importation
 import { socketService } from "./lib/socketService";
 
 export default function App() {
@@ -10,16 +11,20 @@ export default function App() {
 		socketService.connect();
 
 		// S'abonner au canal 'posts'
+		socketService.emit('subscribe', 'posts');
+
+		// S'abonner à l'événement 'dataUpdate'
 		const handlePostsUpdate = (data: any) => {
 			console.log("Posts reçus du backend via Socket.IO:", data);
 			setReceivedPosts(data);
 		};
 
-		socketService.addListener("posts", handlePostsUpdate);
+		socketService.addListener("dataUpdate", handlePostsUpdate);
 
 		// Nettoyage lors du démontage du composant
 		return () => {
-			socketService.removeListener("posts", handlePostsUpdate);
+			socketService.removeListener("dataUpdate", handlePostsUpdate);
+			socketService.emit('unsubscribe', 'posts');
 			socketService.disconnect();
 		};
 	}, []);

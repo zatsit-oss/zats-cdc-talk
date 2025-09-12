@@ -106,6 +106,21 @@ services:
       service: conduktor-console
       file: conduktor.yml
 
+  postgresql-pokesky:
+    image: postgres:14
+    hostname: postgresql-pokesky
+    container_name: postgresql-pokesky
+    volumes:
+      - pg_data_pokesky:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: "pokesky"
+      POSTGRES_USER: "pikachu"
+      POSTGRES_PASSWORD: "zatsit"
+    ports:
+      - "5433:5432"
+    restart: unless-stopped
+
 volumes:
   pg_data: {}
+  pg_data_pokesky: {}
   conduktor_data: {}
