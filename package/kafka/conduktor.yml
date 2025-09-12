@@ -3,7 +3,7 @@ services:
     image: postgres:14
     hostname: postgresql
     volumes:
-      - pg_data:/var/lib/postgresql/data
+      - pg_data:/var/lib/postgresql-conduktor/data
     environment:
       POSTGRES_DB: "conduktor-console"
       POSTGRES_USER: "conduktor"

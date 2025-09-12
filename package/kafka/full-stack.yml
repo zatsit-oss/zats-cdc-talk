@@ -111,7 +111,7 @@ services:
     hostname: postgresql-pokesky
     container_name: postgresql-pokesky
     volumes:
-      - pg_data_pokesky:/var/lib/postgresql/data
+      - pg_data_pokesky:/var/lib/postgresql-pokesky/data
     environment:
       POSTGRES_DB: "pokesky"
       POSTGRES_USER: "pikachu"
