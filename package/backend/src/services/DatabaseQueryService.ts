@@ -10,14 +10,15 @@ import { Post } from "../models/Post";
 
 export class DatabaseQueryService {
 	async execute(id: string) {
-		console.log("query", id);
+		console.log("Attempt to query post with id:", id);
 		try {
 			const post = await this.findOne(Post, { id });
-			console.log("🚀 ~ result ~ post:", post);
-			this.sendToFrontend("posts", post);
 			if (!post) {
-				this.sendToFrontend("posts", `Cannot find post with id ${id}`);
+				this.sendToFrontend("posts", {message: `Cannot find post with id ${id}`});
+				return;
 			}
+			console.log("🚀 Post found:", post);
+			this.sendToFrontend("posts", post);
 		} catch (e) {
 			console.error(e);
 		}

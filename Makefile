@@ -13,15 +13,19 @@ connect:
 	@echo "Starting Kafka Connect stack..."
 	$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) up -d --build
 
-frontend:
-	@echo "Starting frontend..."
-	cd $(FRONTEND_DIR) && npm install && npm run dev &
+# frontend:
+# 	@echo "Starting frontend..."
+# 	cd $(FRONTEND_DIR) && npm install && npm run dev &
 
 backend:
 	@echo "Starting backend..."
 	cd $(BACKEND_DIR) && npm install && npm run dev
 
-start: connect frontend backend
+ngrok:
+	@echo "Starting ngrok..."
+	./start-ngrok.sh &
+
+start: connect ngrok backend
 	@echo "All services started."
 
 stop:

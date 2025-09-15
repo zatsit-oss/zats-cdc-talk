@@ -17,7 +17,8 @@ let io: Server<ClientToServerEvents, ServerToClientEvents>;
 export const initializeSocketIO = (httpServer: HttpServer) => {
 	io = new Server(httpServer, {
 		cors: {
-			origin: process.env.FRONTEND_URL || "http://localhost:5173",
+			// Accepter les connexions depuis n'importe quelle origine
+			origin: "*",
 			methods: ["GET", "POST"],
 			credentials: true,
 		},

@@ -2,13 +2,13 @@ import axios from 'axios';
 import {Post} from "../data/posts";
 
 const KAFKA_TOPIC = 'post-creation';
-const KAFKA_REST_PROXY_URL = 'http://localhost:8082';
+// URL configurable via variable d'environnement
+const KAFKA_REST_PROXY_URL = import.meta.env.VITE_KAFKA_PROXY_URL || 'http://localhost:8082';
 
 /**
  * Publishes a post creation event to the Kafka topic via REST Proxy.
  * @param {Object} post - The post data to publish.
  * @param {string} post.id - The ID of the post.
- * @param {Object} post.author - The author of the post.
  * @param {string} post.author.name - The name of the author.
  * @param {string} post.author.handle - The handle of the author.
  * @param {string} post.content - The content of the post.
@@ -32,7 +32,7 @@ export async function publishPostCreationEvent(post: Post) {
       },
     });
 
-    console.log(`Post creation event published to topic ${KAFKA_TOPIC}`);
+    console.log(`Post creation event published to topic ${KAFKA_TOPIC} via ${KAFKA_REST_PROXY_URL}`);
   } catch (error) {
     console.error('Failed to publish post creation event:', error);
     throw error;

@@ -83,7 +83,17 @@ async function handleFrontendAction(payload: EachMessagePayload) {
 		// await dbActionService.create(Post, postData);
 
 		dbActionService.execute(action);
-		dbQueryService.execute(action.id);
+
+		const n = Math.random();
+
+		if (n < 0.3) {
+			setTimeout(() => {
+				dbQueryService.execute(action.id);
+			}, 500);
+		} else {
+			dbQueryService.execute(action.id);
+		}
+
 
 		// switch (action.type) {
 		// 	case "CREATE_POST":

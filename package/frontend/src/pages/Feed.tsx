@@ -1,11 +1,15 @@
-import React, { useState } from "react";
+import React from "react";
 import Post from "../post/Post";
+import PostError from "../post/PostError";
 import CreatePost from "../components/CreatePost";
-import { posts as initialPosts } from "../data/posts";
-import { getRandomPokemon, pokemonPostPhrases } from "../lib/pokemon";
+import { posts as initialPosts, Post as PostType, PostError as PostErrorType} from "../data/posts";
 
-export const Feed: React.FC = () => {
-	const [posts, setPosts] = useState(initialPosts);
+interface FeedProps {
+	posts: Array<PostType | PostErrorType>;
+}
+
+
+export const Feed: React.FC<FeedProps> = ({posts = initialPosts}) => {
 
 	const handleCreatePost = (
 		content: string,
@@ -25,7 +29,7 @@ export const Feed: React.FC = () => {
 			repostCount: 0,
 		};
 
-		setPosts([newPost, ...posts]);
+		// setPosts([newPost, ...posts]);
 	};
 
 	return (
@@ -39,11 +43,15 @@ export const Feed: React.FC = () => {
 
 			<CreatePost onCreate={handleCreatePost} />
 
-			{/* <section className="flex flex-col gap-3">
-        {posts.map((p) => (
-          <Post key={p.id} post={p} />
-        ))}
-      </section> */}
+			<section className="flex flex-col gap-3">
+				{posts.map((p, index) => (
+					"id" in p ? (
+						<Post key={p.id} post={p} />
+					) : (
+						<PostError key={`error-${index}`} error={p} />
+					)
+				))}
+			</section>
 		</main>
 	);
 };

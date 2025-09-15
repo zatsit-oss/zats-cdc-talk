@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Feed from "./pages/Feed";
 // Correction de l'importation
 import { socketService } from "./lib/socketService";
+import { mapBackendDataToPost } from "./data/posts";
 
 export default function App() {
 	const [receivedPosts, setReceivedPosts] = useState<any[]>([]);
@@ -16,7 +17,9 @@ export default function App() {
 		// S'abonner à l'événement 'dataUpdate'
 		const handlePostsUpdate = (data: any) => {
 			console.log("Posts reçus du backend via Socket.IO:", data);
-			setReceivedPosts(data);
+			const formattedPost = "id" in data ? mapBackendDataToPost(data) : data;
+
+			setReceivedPosts(old => [formattedPost, ...old]);
 		};
 
 		socketService.addListener("dataUpdate", handlePostsUpdate);
@@ -37,9 +40,9 @@ export default function App() {
 					<p className="text-sm text-slate-500">Pokésky.</p>
 				</header>
 
-				<Feed />
+				<Feed posts={receivedPosts} />
 
-				{
+				{/* {
 					<div className="mt-8 p-4 bg-white rounded-lg shadow">
 						<h2 className="text-xl font-semibold mb-4">
 							Messages reçus du backend (via Socket.IO)
@@ -48,7 +51,7 @@ export default function App() {
 							{JSON.stringify(receivedPosts, null, 2)}
 						</pre>
 					</div>
-				}
+				} */}
 			</div>
 		</div>
 	);
