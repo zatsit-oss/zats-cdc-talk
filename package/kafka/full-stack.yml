@@ -117,7 +117,7 @@ services:
       POSTGRES_USER: "pikachu"
       POSTGRES_PASSWORD: "zatsit"
     ports:
-      - "5433:5432"
+      - "5434:5432"
     restart: unless-stopped
 
 volumes:
