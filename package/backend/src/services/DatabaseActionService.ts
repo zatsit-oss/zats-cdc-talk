@@ -54,7 +54,6 @@ export class DatabaseActionService {
 		return savedEntity;
 	}
 
-
 	/**
 	 * Extrait le nom de l'entité à partir de l'objet entité
 	 * @param entity Entité TypeORM

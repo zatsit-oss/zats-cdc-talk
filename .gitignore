@@ -2,3 +2,5 @@
 .idea
 dist
 .env
+*.log
+.env.ngrok.generated
