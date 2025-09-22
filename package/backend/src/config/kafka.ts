@@ -10,7 +10,7 @@ const kafka = new Kafka({
 });
 
 let producer: Producer;
-let consumer: Consumer;
+// let consumer: Consumer;
 
 // Initialisation du producteur Kafka
 export const initializeKafkaProducer = async () => {
@@ -27,7 +27,7 @@ export const initializeKafkaProducer = async () => {
 
 // Initialisation du consommateur Kafka
 export const initializeKafkaConsumer = async (groupId: string) => {
-  consumer = kafka.consumer({ groupId });
+  const consumer = kafka.consumer({ groupId });
   try {
     await consumer.connect();
     console.log(`✅ Consommateur Kafka (groupe ${groupId}) connecté`);
@@ -39,7 +39,7 @@ export const initializeKafkaConsumer = async (groupId: string) => {
 };
 
 // Abonnement à un topic
-export const subscribeToTopic = async (topic: string, messageHandler: (payload: EachMessagePayload) => Promise<void>) => {
+export const subscribeToTopic = async (consumer: Consumer, topic: string, messageHandler: (payload: EachMessagePayload) => Promise<void>) => {
   if (!consumer) {
     throw new Error("Le consommateur Kafka n'est pas initialisé");
   }
@@ -70,13 +70,13 @@ export const sendMessage = async (topic: string, message: any, key?: string) => 
 };
 
 // Fermeture des connexions
-export const shutdownKafka = async () => {
+export const shutdownKafka = async (consumers: Consumer[]) => {
   if (producer) {
     await producer.disconnect();
     console.log("Producteur Kafka déconnecté");
   }
 
-  if (consumer) {
+  for (const consumer of consumers) {
     await consumer.disconnect();
     console.log("Consommateur Kafka déconnecté");
   }

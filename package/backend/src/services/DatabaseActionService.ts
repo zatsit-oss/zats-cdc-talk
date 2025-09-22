@@ -2,13 +2,37 @@ import {
 	Repository,
 	EntityTarget,
 	DeepPartial,
-	FindOptionsWhere,
 } from "typeorm";
 import { AppDataSource } from "../config/database";
-import { sendMessage } from "../config/kafka";
+import { initializeKafkaConsumer, sendMessage, subscribeToTopic } from "../config/kafka";
 import { Post } from "../models/Post";
+import { EachMessagePayload } from "kafkajs";
 
 export class DatabaseActionService {
+
+	async consume(payload:EachMessagePayload){
+		try {
+			const {  message } = payload;
+			if (!message.value) return;
+
+			const action = JSON.parse(message.value.toString());
+
+			console.log(`Action reçue: ${JSON.stringify(action)}`);
+			console.log("Message reçu du topic 'post-creation'", payload);
+
+			this.execute(action);
+
+		} catch (error) {
+			console.error("Erreur lors du traitement de l'action Kafka:", error);
+		}
+	}
+
+	async initialize() {
+		const consumer = await initializeKafkaConsumer("pokesky-action-group");
+		await subscribeToTopic(consumer, "post-creation", this.consume.bind(this));
+		return consumer;
+	}
+
 	async execute(data: any) {
 		console.log("DatabaseActionService is running with data:", data);
 		const postData = {

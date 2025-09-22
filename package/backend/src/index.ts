@@ -1,14 +1,12 @@
 import express from "express";
 import http from "http";
-import { EachMessagePayload } from "kafkajs";
+import { Consumer, EachMessagePayload } from "kafkajs";
 import dotenv from "dotenv";
 import { Post } from "./models/Post";
 import { initializeDatabase } from "./config/database";
 import { initializeSocketIO } from "./config/socket";
 import {
-	initializeKafkaConsumer,
 	initializeKafkaProducer,
-	subscribeToTopic,
 	shutdownKafka,
 } from "./config/kafka";
 import { DatabaseActionService } from "./services/DatabaseActionService";
@@ -40,10 +38,14 @@ async function startServer() {
 
 		// Initialiser Kafka
 		await initializeKafkaProducer();
-		const consumer = await initializeKafkaConsumer("pokesky-group");
+
+		const actionConsumer = await dbActionService.initialize();
+		const queryConsumer = await dbQueryService.initialize();
+
+		// const consumer = await initializeKafkaConsumer("pokesky-group");
 
 		// Configurer les écouteurs Kafka pour les actions du frontend
-		await subscribeToTopic("post-creation", handleFrontendAction);
+		// await subscribeToTopic("post-creation", handleFrontendAction);
 
 		// Configurer les routes API
 		setupApiRoutes();
@@ -54,7 +56,7 @@ async function startServer() {
 		});
 
 		// Gestion de l'arrêt propre du serveur
-		setupGracefulShutdown();
+		setupGracefulShutdown([actionConsumer, queryConsumer]);
 	} catch (error) {
 		console.error("Erreur lors du démarrage du serveur:", error);
 		process.exit(1);
@@ -71,16 +73,6 @@ async function handleFrontendAction(payload: EachMessagePayload) {
 		console.log(`Action reçue: ${JSON.stringify(action)}`);
 		console.log("Message reçu du topic 'post-creation'", payload);
 
-		// Transformer les données pour correspondre à notre modèle de base de données
-		// const postData = {
-		// 	id: action.id,
-		// 	authorName: action.author.name,
-		// 	authorHandle: action.author.handle,
-		// 	content: action.content,
-		// 	createdAt: action.createdAt,
-		// };
-
-		// await dbActionService.create(Post, postData);
 
 		dbActionService.execute(action);
 
@@ -95,24 +87,7 @@ async function handleFrontendAction(payload: EachMessagePayload) {
 		}
 
 
-		// switch (action.type) {
-		// 	case "CREATE_POST":
-		// 		await dbActionService.create(Post, action.data);
-		// 		break;
-		// 	case "UPDATE_POST":
-		// 		await dbActionService.update(Post, { id: action.data.id }, action.data);
-		// 		break;
-		// 	case "DELETE_POST":
-		// 		await dbActionService.delete(Post, { id: action.data.id });
-		// 		break;
-		// 	default:
-		// 		console.warn(`Type d'action inconnu: ${action.type}`);
-		// }
 
-		// Envoyer les données mises à jour au frontend
-		// const posts = await dbQueryService.findMany(Post);
-		// console.log("🚀 ~ handleFrontendAction ~ posts:", posts);
-		// dbQueryService.sendToFrontend("posts", posts);
 	} catch (error) {
 		console.error("Erreur lors du traitement de l'action Kafka:", error);
 	}
@@ -152,12 +127,12 @@ function setupApiRoutes() {
 }
 
 // Gestion de l'arrêt propre du serveur
-function setupGracefulShutdown() {
+function setupGracefulShutdown(consumers: Consumer[] = []) {
 	const shutdown = async () => {
 		console.log("Arrêt du serveur...");
 
 		// Fermer les connexions Kafka
-		await shutdownKafka();
+		await shutdownKafka(consumers);
 
 		// Fermer le serveur HTTP
 		server.close(() => {

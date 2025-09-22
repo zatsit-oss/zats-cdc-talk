@@ -7,14 +7,48 @@ import {
 import { AppDataSource } from "../config/database";
 import { emitToClients } from "../config/socket";
 import { Post } from "../models/Post";
+import { EachMessagePayload } from "kafkajs";
+import { initializeKafkaConsumer, subscribeToTopic } from "../config/kafka";
 
 export class DatabaseQueryService {
+
+
+	async consume(payload: EachMessagePayload) {
+		try {
+			const { message } = payload;
+			if (!message.value) return;
+
+			const action = JSON.parse(message.value.toString());
+			console.log(`Action reçue: ${JSON.stringify(action)}`);
+			console.log("Message reçu du topic 'post-creation'", payload);
+			const n = Math.random();
+
+			if (n < 0.3) {
+				setTimeout(() => {
+					this.execute(action.id);
+				}, 500);
+			} else {
+				this.execute(action.id);
+			}
+
+
+		} catch (error) {
+			console.error("Erreur lors du traitement de l'action Kafka:", error);
+		}
+	}
+
+	async initialize() {
+		const consumer = await initializeKafkaConsumer("pokesky-query-group");
+		await subscribeToTopic(consumer, "post-creation", this.consume.bind(this));
+		return consumer;
+	}
+
 	async execute(id: string) {
 		console.log("Attempt to query post with id:", id);
 		try {
 			const post = await this.findOne(Post, { id });
 			if (!post) {
-				this.sendToFrontend("posts", {message: `Cannot find post with id ${id}`});
+				this.sendToFrontend("posts", { message: `Cannot find post with id ${id}` });
 				return;
 			}
 			console.log("🚀 Post found:", post);
