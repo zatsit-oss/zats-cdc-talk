@@ -1,18 +1,13 @@
-import {
-	Repository,
-	EntityTarget,
-	DeepPartial,
-} from "typeorm";
+import { Repository, EntityTarget, DeepPartial } from "typeorm";
 import { AppDataSource } from "../config/database";
-import { initializeKafkaConsumer, sendMessage, subscribeToTopic } from "../config/kafka";
+import { initializeKafkaConsumer, subscribeToTopic } from "../config/kafka";
 import { Post } from "../models/Post";
 import { EachMessagePayload } from "kafkajs";
 
 export class DatabaseActionService {
-
-	async consume(payload:EachMessagePayload){
+	async consume(payload: EachMessagePayload) {
 		try {
-			const {  message } = payload;
+			const { message } = payload;
 			if (!message.value) return;
 
 			const action = JSON.parse(message.value.toString());
@@ -21,7 +16,6 @@ export class DatabaseActionService {
 			console.log("Message reçu du topic 'post-creation'", payload);
 
 			this.execute(action);
-
 		} catch (error) {
 			console.error("Erreur lors du traitement de l'action Kafka:", error);
 		}
@@ -67,29 +61,6 @@ export class DatabaseActionService {
 		const newEntity = repository.create(data);
 		const savedEntity = await repository.save(newEntity as any);
 
-		// Envoyer une notification Kafka
-		const entityName = this.getEntityName(entity);
-		await sendMessage(`${entityName.toLowerCase()}.created`, {
-			type: "CREATE",
-			entity: entityName,
-			data: savedEntity,
-		});
-
 		return savedEntity;
-	}
-
-	/**
-	 * Extrait le nom de l'entité à partir de l'objet entité
-	 * @param entity Entité TypeORM
-	 * @returns Nom de l'entité
-	 */
-	private getEntityName<T>(entity: EntityTarget<T>): string {
-		if (typeof entity === "function") {
-			return entity.name;
-		}
-		if (typeof entity === "string") {
-			return entity;
-		}
-		return "Unknown";
 	}
 }
