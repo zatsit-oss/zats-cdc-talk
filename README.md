@@ -62,9 +62,41 @@ The `Makefile` provides the following commands:
   ```
   This command stops all running containers (connect).
 
+
+### How to configure Kafka Connect and create a Postgresql connector ?
+
+Kafka Connect is already available with the provided docker-compose file. You just need to run make start.
+
+#### How to add a Postgresql connector
+
+TODO Quentin: Setup la Database avant sinon la task failed: io.debezium.DebeziumException: Creation of replication slot failed
+
+You have two choices to achieve this.
+
+1. With Conduktor Console
+
+- Go to the Conduktor Console, by default http://localhost:8080
+- Go to "Kafka Connect" on left menu
+- Click on "full stack kafka connect"
+- Click on "Add connector" on the top right corner
+- Choose "Postgres Connector"
+- Fill informations on "Postgres" form:
+  - Topic prefix: pokesky
+  - Hostname: postgresql-pokesky
+  - Port: 5432
+  - User: pikachu
+  - Password: zatsit
+  - Database: pokesky
+- Give a name for your connector (on the top)
+- Click on Next
+- Review your config and click on Submit
+- And 🎉
+
+
 ### Notes
 
 - Ensure that the `docker-compose` command is available in your terminal.
 - The frontend and backend directories are located under the `package/` folder.
 - Modify the `Makefile` if your directory structure or requirements differ.
 - To kill ngrok, frontend and backend services started with make start command, just Ctrl + C
+
