@@ -119,6 +119,7 @@ services:
     ports:
       - "5434:5432"
     restart: unless-stopped
+    command: [ "postgres", "-c", "wal_level=logical" ]
 
 volumes:
   pg_data: {}

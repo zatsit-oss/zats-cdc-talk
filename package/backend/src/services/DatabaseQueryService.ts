@@ -6,8 +6,13 @@ import type { EachMessagePayload } from "kafkajs";
 import { initializeKafkaConsumer, subscribeToTopic } from "../config/kafka";
 
 export class DatabaseQueryService {
-	readonly topic =
-		process.env.MODE === "DCD" ? "post-creation" : "pokesky.public.post";
+	readonly mode: "CDC" | "DCD";
+	readonly topic: string;
+
+	constructor(mode: "CDC" | "DCD") {
+		this.mode = mode;
+		this.topic = this.mode === "DCD" ? "post-creation" : "pokesky.public.post";
+	}
 
 	async consume(payload: EachMessagePayload) {
 		try {
@@ -15,11 +20,13 @@ export class DatabaseQueryService {
 			if (!message.value) return;
 
 			const action = JSON.parse(message.value.toString());
-			console.log(`Action reçue: ${JSON.stringify(action)}`);
-			console.log("Message reçu du topic", this.topic, payload);
+			console.log(
+				`[📢 BroadcastService] Message reçu du topic Kafka ${this.topic}:`,
+				action,
+			);
 			const n = Math.random();
 
-			const id = process.env.MODE === "DCD" ? action.id : action.after.id;
+			const id = this.mode === "CDC" ? action.after.id : action.id;
 
 			if (n < 0.3) {
 				setTimeout(() => {
@@ -40,7 +47,7 @@ export class DatabaseQueryService {
 	}
 
 	async execute(id: string) {
-		console.log("Attempt to query post with id:", id);
+		console.log("[📢 BroadcastService] 🧐 Attempt to get post with id:", id);
 		try {
 			const post = await this.findOne(Post, { id });
 			if (!post) {

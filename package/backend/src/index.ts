@@ -11,9 +11,37 @@ import { DatabaseQueryService } from "./services/DatabaseQueryService";
 // Chargement des variables d'environnement
 dotenv.config();
 
+const mode: "DCD" | "CDC" =
+	process.env.MODE === "DCD"
+		? "DCD"
+		: process.env.MODE === "CDC"
+			? "CDC"
+			: "DCD";
+
+// ASCII Art pour afficher le mode
+console.log("+-----------------------------------------+");
+if (mode === "CDC") {
+	console.log("|   .d8888b.  8888888b.   .d8888b.      |");
+	console.log('|  d88P  Y88b 888  "Y88b d88P  Y88b     |');
+	console.log("|  888    888 888    888 888            |");
+	console.log("|  888        888    888 888            |");
+	console.log("|  888        888    888 888            |");
+	console.log("|  Y88b    d8 888  .d88P Y88b    d8     |");
+	console.log('|   "Y8888P"  8888888P"   "Y8888P"      |');
+} else {
+	console.log("|  8888888b.   .d8888b.  8888888b.      |");
+	console.log('|  888  "Y88b d88P  Y88b 888  "Y88b     |');
+	console.log("|  888    888 888    888 888    888     |");
+	console.log("|  888    888 888        888    888     |");
+	console.log("|  888    888 888        888    888     |");
+	console.log("|  888  .d88P Y88b  d88P 888  .d88P     |");
+	console.log('|  8888888P"   "Y8888P"  8888888P"      |');
+}
+console.log("+-----------------------------------------+");
+
 // Services
 const dbActionService = new DatabaseActionService();
-const dbQueryService = new DatabaseQueryService();
+const dbQueryService = new DatabaseQueryService(mode);
 
 // Initialisation de l'application Express
 const app = express();

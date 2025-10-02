@@ -12,8 +12,7 @@ export class DatabaseActionService {
 
 			const action = JSON.parse(message.value.toString());
 
-			console.log(`Action reçue: ${JSON.stringify(action)}`);
-			console.log("Message reçu du topic 'post-creation'", payload);
+			console.log(`🐘 [CreationService] Message reçu du topic Kafka:`, action);
 
 			this.execute(action);
 		} catch (error) {
@@ -28,7 +27,6 @@ export class DatabaseActionService {
 	}
 
 	async execute(data: any) {
-		console.log("DatabaseActionService is running with data:", data);
 		const postData = {
 			id: data.id, // Utilisation de crypto.randomUUID() en remplacement de uuid v4
 			authorName: data.author.name,
@@ -38,7 +36,7 @@ export class DatabaseActionService {
 		};
 
 		const post = await this.create(Post, postData);
-		console.log("Created post:", post);
+		console.log("✅ Post créé:", post);
 	}
 
 	/**
