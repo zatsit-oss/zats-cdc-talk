@@ -13,7 +13,7 @@ export const AppDataSource = new DataSource({
 	password: process.env.DB_PASSWORD || "zatsit",
 	database: process.env.DB_NAME || "pokesky",
 	synchronize: process.env.NODE_ENV !== "production", // Synchronisation automatique du schéma en développement
-	logging: process.env.NODE_ENV !== "production",
+	logging: ["info"],
 	entities: [path.join(__dirname, "../models/**/*.{js,ts}")],
 	migrations: [path.join(__dirname, "../migrations/**/*.{js,ts}")],
 });

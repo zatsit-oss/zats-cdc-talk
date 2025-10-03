@@ -1,25 +1,47 @@
 import express from "express";
 import http from "http";
-import { EachMessagePayload } from "kafkajs";
+import type { Consumer } from "kafkajs";
 import dotenv from "dotenv";
-import { Post } from "./models/Post";
 import { initializeDatabase } from "./config/database";
 import { initializeSocketIO } from "./config/socket";
-import {
-	initializeKafkaConsumer,
-	initializeKafkaProducer,
-	subscribeToTopic,
-	shutdownKafka,
-} from "./config/kafka";
+import { initializeKafkaProducer, shutdownKafka } from "./config/kafka";
 import { DatabaseActionService } from "./services/DatabaseActionService";
 import { DatabaseQueryService } from "./services/DatabaseQueryService";
 
 // Chargement des variables d'environnement
 dotenv.config();
 
+const mode: "DCD" | "CDC" =
+	process.env.MODE === "DCD"
+		? "DCD"
+		: process.env.MODE === "CDC"
+			? "CDC"
+			: "DCD";
+
+// ASCII Art pour afficher le mode
+console.log("+-----------------------------------------+");
+if (mode === "CDC") {
+	console.log("|   .d8888b.  8888888b.   .d8888b.      |");
+	console.log('|  d88P  Y88b 888  "Y88b d88P  Y88b     |');
+	console.log("|  888    888 888    888 888            |");
+	console.log("|  888        888    888 888            |");
+	console.log("|  888        888    888 888            |");
+	console.log("|  Y88b    d8 888  .d88P Y88b    d8     |");
+	console.log('|   "Y8888P"  8888888P"   "Y8888P"      |');
+} else {
+	console.log("|  8888888b.   .d8888b.  8888888b.      |");
+	console.log('|  888  "Y88b d88P  Y88b 888  "Y88b     |');
+	console.log("|  888    888 888    888 888    888     |");
+	console.log("|  888    888 888        888    888     |");
+	console.log("|  888    888 888        888    888     |");
+	console.log("|  888  .d88P Y88b  d88P 888  .d88P     |");
+	console.log('|  8888888P"   "Y8888P"  8888888P"      |');
+}
+console.log("+-----------------------------------------+");
+
 // Services
 const dbActionService = new DatabaseActionService();
-const dbQueryService = new DatabaseQueryService();
+const dbQueryService = new DatabaseQueryService(mode);
 
 // Initialisation de l'application Express
 const app = express();
@@ -40,13 +62,9 @@ async function startServer() {
 
 		// Initialiser Kafka
 		await initializeKafkaProducer();
-		const consumer = await initializeKafkaConsumer("pokesky-group");
 
-		// Configurer les écouteurs Kafka pour les actions du frontend
-		await subscribeToTopic("post-creation", handleFrontendAction);
-
-		// Configurer les routes API
-		setupApiRoutes();
+		const actionConsumer = await dbActionService.initialize();
+		const queryConsumer = await dbQueryService.initialize();
 
 		// Démarrer le serveur HTTP
 		server.listen(PORT, () => {
@@ -54,110 +72,20 @@ async function startServer() {
 		});
 
 		// Gestion de l'arrêt propre du serveur
-		setupGracefulShutdown();
+		setupGracefulShutdown([actionConsumer, queryConsumer]);
 	} catch (error) {
 		console.error("Erreur lors du démarrage du serveur:", error);
 		process.exit(1);
 	}
 }
 
-// Traitement des actions reçues du frontend via Kafka
-async function handleFrontendAction(payload: EachMessagePayload) {
-	try {
-		const { topic, partition, message } = payload;
-		if (!message.value) return;
-
-		const action = JSON.parse(message.value.toString());
-		console.log(`Action reçue: ${JSON.stringify(action)}`);
-		console.log("Message reçu du topic 'post-creation'", payload);
-
-		// Transformer les données pour correspondre à notre modèle de base de données
-		// const postData = {
-		// 	id: action.id,
-		// 	authorName: action.author.name,
-		// 	authorHandle: action.author.handle,
-		// 	content: action.content,
-		// 	createdAt: action.createdAt,
-		// };
-
-		// await dbActionService.create(Post, postData);
-
-		dbActionService.execute(action);
-
-		const n = Math.random();
-
-		if (n < 0.3) {
-			setTimeout(() => {
-				dbQueryService.execute(action.id);
-			}, 500);
-		} else {
-			dbQueryService.execute(action.id);
-		}
-
-
-		// switch (action.type) {
-		// 	case "CREATE_POST":
-		// 		await dbActionService.create(Post, action.data);
-		// 		break;
-		// 	case "UPDATE_POST":
-		// 		await dbActionService.update(Post, { id: action.data.id }, action.data);
-		// 		break;
-		// 	case "DELETE_POST":
-		// 		await dbActionService.delete(Post, { id: action.data.id });
-		// 		break;
-		// 	default:
-		// 		console.warn(`Type d'action inconnu: ${action.type}`);
-		// }
-
-		// Envoyer les données mises à jour au frontend
-		// const posts = await dbQueryService.findMany(Post);
-		// console.log("🚀 ~ handleFrontendAction ~ posts:", posts);
-		// dbQueryService.sendToFrontend("posts", posts);
-	} catch (error) {
-		console.error("Erreur lors du traitement de l'action Kafka:", error);
-	}
-}
-
-// Configuration des routes API
-function setupApiRoutes() {
-	// Route pour obtenir tous les posts
-	app.get("/api/posts", async (req, res) => {
-		try {
-			const posts = await dbQueryService.findMany(Post);
-			res.json(posts);
-		} catch (error) {
-			res
-				.status(500)
-				.json({ error: "Erreur lors de la récupération des posts" });
-		}
-	});
-
-	// Route pour obtenir un post par son ID
-	app.get("/api/posts/:id", async (req, res) => {
-		try {
-			const post = await dbQueryService.findOne(Post, { id: req.params.id });
-			if (!post) {
-				return res.status(404).json({ error: "Post non trouvé" });
-			}
-			res.json(post);
-		} catch (error) {
-			res.status(500).json({ error: "Erreur lors de la récupération du post" });
-		}
-	});
-
-	// Route pour vérifier la santé du service
-	app.get("/health", (req, res) => {
-		res.status(200).json({ status: "ok" });
-	});
-}
-
 // Gestion de l'arrêt propre du serveur
-function setupGracefulShutdown() {
+function setupGracefulShutdown(consumers: Consumer[] = []) {
 	const shutdown = async () => {
 		console.log("Arrêt du serveur...");
 
 		// Fermer les connexions Kafka
-		await shutdownKafka();
+		await shutdownKafka(consumers);
 
 		// Fermer le serveur HTTP
 		server.close(() => {

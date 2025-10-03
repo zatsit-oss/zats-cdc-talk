@@ -27,20 +27,22 @@ export const initializeSocketIO = (httpServer: HttpServer) => {
 	io.on(
 		"connection",
 		(socket: Socket<ClientToServerEvents, ServerToClientEvents>) => {
-			console.log(`Client connecté: ${socket.id}`);
+			console.log(`✅ Client connecté: ${socket.id}`);
 
 			socket.on("subscribe", (channel) => {
-				console.log(`Client ${socket.id} s'est abonné au canal: ${channel}`);
+				console.log(`✅ Client ${socket.id} s'est abonné au canal: ${channel}`);
 				socket.join(channel);
 			});
 
 			socket.on("unsubscribe", (channel) => {
-				console.log(`Client ${socket.id} s'est désabonné du canal: ${channel}`);
+				console.log(
+					`😭 Client ${socket.id} s'est désabonné du canal: ${channel}`,
+				);
 				socket.leave(channel);
 			});
 
 			socket.on("disconnect", () => {
-				console.log(`Client déconnecté: ${socket.id}`);
+				console.log(`❌ Client déconnecté: ${socket.id}`);
 			});
 		},
 	);
@@ -51,10 +53,9 @@ export const initializeSocketIO = (httpServer: HttpServer) => {
 // Fonction pour émettre des données aux clients
 export const emitToClients = (channel: string, data: any) => {
 	if (!io) {
-		console.warn("Socket.IO n'est pas initialisé");
+		console.warn("❌ Socket.IO n'est pas initialisé");
 		return;
 	}
-	console.log("🚀 ~ emitToClients ~ data:", data);
-	// io.to(channel).emit("dataUpdate", data ?? []);
+	console.log("📬 Emit to clients:", data);
 	io.emit("dataUpdate", data);
 };
