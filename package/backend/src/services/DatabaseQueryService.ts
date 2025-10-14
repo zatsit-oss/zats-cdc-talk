@@ -4,6 +4,7 @@ import { emitToClients } from "../config/socket";
 import { Post } from "../models/Post";
 import type { EachMessagePayload } from "kafkajs";
 import { initializeKafkaConsumer, subscribeToTopic } from "../config/kafka";
+import { mimicNetworkLatency } from "../utils";
 
 export class DatabaseQueryService {
 	readonly mode: "CDC" | "DCD";
@@ -11,7 +12,7 @@ export class DatabaseQueryService {
 
 	constructor(mode: "CDC" | "DCD") {
 		this.mode = mode;
-		this.topic = this.mode === "DCD" ? "post-creation" : "pokesky.public.post";
+		this.topic = mode === "CDC" ? "pokesky.public.post": "post-creation";
 	}
 
 	async consume(payload: EachMessagePayload) {
@@ -24,17 +25,10 @@ export class DatabaseQueryService {
 				`[📢 BroadcastService] Message reçu du topic Kafka ${this.topic}:`,
 				action,
 			);
-			const n = Math.random();
 
 			const id = this.mode === "CDC" ? action.after.id : action.id;
 
-			if (n < 0.3) {
-				setTimeout(() => {
-					this.execute(id);
-				}, 500);
-			} else {
-				this.execute(id);
-			}
+			mimicNetworkLatency(() => this.execute(id));
 		} catch (error) {
 			console.error("Erreur lors du traitement de l'action Kafka:", error);
 		}

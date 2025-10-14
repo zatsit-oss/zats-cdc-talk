@@ -86,6 +86,14 @@ CREATE TABLE IF NOT EXISTS public.kafka_connect_heartbeat
 INSERT INTO public.kafka_connect_heartbeat values ('kafka_connect_heartbeat',1);
 ```
 
+> [!NOTE]
+> By default, Kafka Connect only pushes data after the change. This means that the before field will be null and the after field will contain the updated data.
+> To have both the before and after data, you must enable FULL replication on the table.
+> To do this, execute this SQL line:
+> ```sql
+> ALTER TABLE "Post" REPLICA IDENTITY FULL;
+> ```
+
 #### How to add a Postgresql connector
 
 
