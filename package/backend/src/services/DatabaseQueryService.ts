@@ -12,7 +12,7 @@ export class DatabaseQueryService {
 
 	constructor(mode: "CDC" | "DCD") {
 		this.mode = mode;
-		this.topic = mode === "CDC" ? "pokesky.public.post": "post-creation";
+		this.topic = "post-creation";
 	}
 
 	async consume(payload: EachMessagePayload) {
@@ -26,7 +26,7 @@ export class DatabaseQueryService {
 				action,
 			);
 
-			const id = this.mode === "CDC" ? action.after.id : action.id;
+			const id = action.id;
 
 			mimicNetworkLatency(() => this.execute(id));
 		} catch (error) {
