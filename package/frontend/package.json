@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "postinstall": "npm run build",
     "start": "node server.js",
     "preview": "vite preview --port 5173",
     "lint": "eslint . --ext .ts,.tsx",
