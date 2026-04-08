@@ -7,6 +7,22 @@
       "git_ssh_url": "git+ssh://git@push-n3-par-clevercloud-customers.services.clever-cloud.com/app_98d93dbd-e7f2-4a64-aefc-1684f07925fd.git",
       "name": "pokesky-frontend",
       "alias": "pokesky-frontend"
+    },
+    {
+      "app_id": "app_83c2d1d0-fe92-4674-b962-83f39b055b02",
+      "org_id": "user_80f93c9d-89e5-4963-8eb2-fdf501f59418",
+      "deploy_url": "https://push-n3-par-clevercloud-customers.services.clever-cloud.com/app_83c2d1d0-fe92-4674-b962-83f39b055b02.git",
+      "git_ssh_url": "git+ssh://git@push-n3-par-clevercloud-customers.services.clever-cloud.com/app_83c2d1d0-fe92-4674-b962-83f39b055b02.git",
+      "name": "pokesky-backend-query",
+      "alias": "backend-query"
+    },
+    {
+      "app_id": "app_66a9c870-f4e9-4867-ab2c-b6ff1b82f5d2",
+      "org_id": "user_80f93c9d-89e5-4963-8eb2-fdf501f59418",
+      "deploy_url": "https://push-n3-par-clevercloud-customers.services.clever-cloud.com/app_66a9c870-f4e9-4867-ab2c-b6ff1b82f5d2.git",
+      "git_ssh_url": "git+ssh://git@push-n3-par-clevercloud-customers.services.clever-cloud.com/app_66a9c870-f4e9-4867-ab2c-b6ff1b82f5d2.git",
+      "name": "pokesky-backend-action",
+      "alias": "backend-action"
     }
   ]
 }

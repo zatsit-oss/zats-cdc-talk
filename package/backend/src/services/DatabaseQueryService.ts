@@ -1,4 +1,4 @@
-import type { Repository, EntityTarget, FindOptionsWhere } from "typeorm";
+import type { Repository, EntityTarget, FindOptionsWhere, ObjectLiteral } from "typeorm";
 import { AppDataSource } from "../config/database";
 import { emitToClients } from "../config/socket";
 import { Post } from "../models/Post";
@@ -62,7 +62,7 @@ export class DatabaseQueryService {
 	 * @param entity Entité TypeORM
 	 * @returns Repository pour l'entité
 	 */
-	private getRepository<T>(entity: EntityTarget<T>): Repository<T> {
+	private getRepository<T extends ObjectLiteral>(entity: EntityTarget<T>): Repository<T> {
 		return AppDataSource.getRepository(entity);
 	}
 
@@ -72,7 +72,7 @@ export class DatabaseQueryService {
 	 * @param criteria Critères de recherche
 	 * @returns Entité trouvée ou null
 	 */
-	async findOne<T>(
+	async findOne<T extends ObjectLiteral>(
 		entity: EntityTarget<T>,
 		criteria: FindOptionsWhere<T>,
 	): Promise<T | null> {

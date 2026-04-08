@@ -1,4 +1,4 @@
-import { Repository, EntityTarget, DeepPartial } from "typeorm";
+import { Repository, EntityTarget, DeepPartial, ObjectLiteral } from "typeorm";
 import { AppDataSource } from "../config/database";
 import { initializeKafkaConsumer, subscribeToTopic } from "../config/kafka";
 import { Post } from "../models/Post";
@@ -44,7 +44,7 @@ export class DatabaseActionService {
 	 * @param entity Entité TypeORM
 	 * @returns Repository pour l'entité
 	 */
-	private getRepository<T>(entity: EntityTarget<T>): Repository<T> {
+	private getRepository<T extends ObjectLiteral>(entity: EntityTarget<T>): Repository<T> {
 		return AppDataSource.getRepository(entity);
 	}
 
@@ -54,7 +54,7 @@ export class DatabaseActionService {
 	 * @param data Données à insérer
 	 * @returns Entité créée
 	 */
-	async create<T>(entity: EntityTarget<T>, data: DeepPartial<T>): Promise<T> {
+	async create<T extends ObjectLiteral>(entity: EntityTarget<T>, data: DeepPartial<T>): Promise<T> {
 		const repository = this.getRepository(entity);
 		const newEntity = repository.create(data);
 		const savedEntity = await repository.save(newEntity as any);
