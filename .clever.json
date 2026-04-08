@@ -1,0 +1,12 @@
+{
+  "apps": [
+    {
+      "app_id": "app_98d93dbd-e7f2-4a64-aefc-1684f07925fd",
+      "org_id": "user_80f93c9d-89e5-4963-8eb2-fdf501f59418",
+      "deploy_url": "https://push-n3-par-clevercloud-customers.services.clever-cloud.com/app_98d93dbd-e7f2-4a64-aefc-1684f07925fd.git",
+      "git_ssh_url": "git+ssh://git@push-n3-par-clevercloud-customers.services.clever-cloud.com/app_98d93dbd-e7f2-4a64-aefc-1684f07925fd.git",
+      "name": "pokesky-frontend",
+      "alias": "pokesky-frontend"
+    }
+  ]
+}

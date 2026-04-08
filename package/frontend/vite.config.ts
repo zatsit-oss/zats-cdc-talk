@@ -8,4 +8,8 @@ export default defineConfig({
 		port: 5173,
 		allowedHosts: true,
 	},
+	preview: {
+		port: parseInt(process.env.PORT || "8080"),
+		host: "0.0.0.0",
+	},
 });
