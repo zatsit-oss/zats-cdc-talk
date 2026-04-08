@@ -60,7 +60,9 @@ const PORT = process.env.PORT || 3000;
 async function startServer() {
 	try {
 		// Initialiser la connexion à la base de données
-		awaVariables pour stocker les consumers
+		await initializeDatabase();
+
+		// Variables pour stocker les consumers
 		const consumers: Consumer[] = [];
 
 		// Initialiser Socket.IO seulement si le service query est actif
@@ -93,9 +95,7 @@ async function startServer() {
 		});
 
 		// Gestion de l'arrêt propre du serveur
-		setupGracefulShutdown(consumers
-		// Gestion de l'arrêt propre du serveur
-		setupGracefulShutdown([actionConsumer, queryConsumer]);
+		setupGracefulShutdown(consumers);
 	} catch (error) {
 		console.error("Erreur lors du démarrage du serveur:", error);
 		process.exit(1);
