@@ -18,6 +18,9 @@ const mode: "DCD" | "CDC" =
 			? "CDC"
 			: "DCD";
 
+type ServiceType = "action" | "query" | "both";
+const serviceType: ServiceType = (process.env.SERVICE_TYPE as ServiceType) || "both";
+
 // ASCII Art pour afficher le mode
 console.log("+-----------------------------------------+");
 if (mode === "CDC") {
@@ -38,6 +41,8 @@ if (mode === "CDC") {
 	console.log('|  8888888P"   "Y8888P"  8888888P"      |');
 }
 console.log("+-----------------------------------------+");
+console.log(`|  Service Type: ${serviceType.toUpperCase().padEnd(28)} |`);
+console.log("+-----------------------------------------+");
 
 // Services
 const dbActionService = new DatabaseActionService();
@@ -55,22 +60,40 @@ const PORT = process.env.PORT || 3000;
 async function startServer() {
 	try {
 		// Initialiser la connexion à la base de données
-		await initializeDatabase();
+		awaVariables pour stocker les consumers
+		const consumers: Consumer[] = [];
 
-		// Initialiser Socket.IO
-		const io = initializeSocketIO(server);
+		// Initialiser Socket.IO seulement si le service query est actif
+		if (serviceType === "query" || serviceType === "both") {
+			const io = initializeSocketIO(server);
+			console.log("✅ Socket.IO initialisé");
+		}
 
 		// Initialiser Kafka
 		await initializeKafkaProducer();
 
-		const actionConsumer = await dbActionService.initialize();
-		const queryConsumer = await dbQueryService.initialize();
+		// Initialiser les services selon SERVICE_TYPE
+		if (serviceType === "action" || serviceType === "both") {
+			const actionConsumer = await dbActionService.initialize();
+			consumers.push(actionConsumer);
+			console.log("✅ DatabaseActionService initialisé");
+		}
+
+		if (serviceType === "query" || serviceType === "both") {
+			const queryConsumer = await dbQueryService.initialize();
+			consumers.push(queryConsumer);
+			console.log("✅ DatabaseQueryService initialisé");
+		}
 
 		// Démarrer le serveur HTTP
 		server.listen(PORT, () => {
 			console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
+			console.log(`📡 Mode: ${mode}`);
+			console.log(`🔧 Service: ${serviceType}`);
 		});
 
+		// Gestion de l'arrêt propre du serveur
+		setupGracefulShutdown(consumers
 		// Gestion de l'arrêt propre du serveur
 		setupGracefulShutdown([actionConsumer, queryConsumer]);
 	} catch (error) {

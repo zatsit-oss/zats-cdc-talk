@@ -2,8 +2,10 @@
 	"name": "zats-cdc-backend",
 	"version": "0.0.1",
 	"private": true,
+	"main": "dist/index.js",
 	"scripts": {
 		"build": "tsc",
+		"postinstall": "npm run build",
 		"start": "node dist/index.js",
 		"dev": "ts-node-dev --respawn --transpile-only src/index.ts",
 		"lint": "biome lint .",
