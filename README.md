@@ -62,6 +62,40 @@ The `Makefile` provides the following commands:
   ```
   This command stops all running containers (connect).
 
+## 🌐 Deployment on CleverCloud Kubernetes
+
+### 🎯 Solution recommandée : Déploiement complet dans K8s
+
+**Déployez Frontend + Backend + Kafka dans le même cluster Kubernetes.**
+
+**Avantages :**
+- ✅ **1 seul LoadBalancer** nécessaire (pour le frontend)
+- ✅ **Quota par défaut suffisant** (2 IPs publiques = 1 LoadBalancer)
+- ✅ **Performance maximale** (réseau interne K8s)
+- ✅ **Sécurité optimale** (Kafka et backend non exposés publiquement)
+- ✅ **Pas de problème de quota IP**
+
+**📖 Guide complet : [DEPLOY_TO_K8S.md](./DEPLOY_TO_K8S.md)** ⭐
+
+### Commandes rapides
+
+```bash
+# Tester la stack Kafka
+make k8s-test
+
+# Déployer frontend et backend (après création des Dockerfiles)
+kubectl apply -f k8s/backend-deployment.yaml
+kubectl apply -f k8s/frontend-deployment.yaml
+
+# Obtenir l'URL publique du frontend
+kubectl get service frontend
+```
+
+### 📚 Documentation
+
+- **[DEPLOY_TO_K8S.md](./DEPLOY_TO_K8S.md)** - Guide complet de déploiement ⭐
+- [FIX_KAFKA_CONNECTION_K8S.md](./FIX_KAFKA_CONNECTION_K8S.md) - Correction du bug "Expected 1 brokers but found only 0"
+- [k8s/README.md](./k8s/README.md) - Configuration Kubernetes de la stack Kafka
 
 ### How to configure Kafka Connect and create a Postgresql connector ?
 
@@ -70,7 +104,7 @@ Kafka Connect is already available with the provided docker-compose file. You ju
 #### Database configuration
 
 At startup, our Postgresql database is already with a wal level at `logical` which is the level required to work with Kafka Connect.
-You can easily verify with the following command: ̀`show wal_level;`
+You can easily verify with the following command: `show wal_level;`
 
 After this, you need to run some queries to make the heartbeat working:
 
@@ -95,7 +129,6 @@ INSERT INTO public.kafka_connect_heartbeat values ('kafka_connect_heartbeat',1);
 > ```
 
 #### How to add a Postgresql connector
-
 
 You have two choices to achieve this.
 

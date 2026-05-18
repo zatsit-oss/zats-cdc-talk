@@ -1,12 +1,5 @@
 version: "3"
 endpoints:
-  - name: frontend
-    description: Pokesky Frontend
-    # comment if free plan to generate random url
-    url: frontend.pokesky.ngrok.app
-    upstream:
-      url: 5173  # Port de votre frontend (Vite utilise généralement 5173)
-      protocol: http1
   - name: backend
     description: Pokesky Backend
     # comment if free plan to generate random url
@@ -15,9 +8,15 @@ endpoints:
       url: 3000  # Port de votre backend
       protocol: http1
   - name: kafka-proxy
-    description: Pokesky Kafka Proxy
+    description: Pokesky Kafka REST Proxy
     # comment if free plan to generate random url
     url: kafka-proxy.pokesky.ngrok.app
     upstream:
-      url: 8082  # Port de votre proxy Kafka
+      url: 8082  # Kafka REST Proxy
       protocol: http1
+  - name: kafka-broker
+    description: Kafka Broker (requires paid plan)
+    # url: kafka-broker.pokesky.ngrok.app
+    upstream:
+      url: 9092  # Kafka broker
+      protocol: tcp

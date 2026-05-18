@@ -37,3 +37,13 @@ stop:
 	@echo "Stopping all services..."
 	$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) down -v
 	@echo "All services stopped."
+
+# CleverCloud Kubernetes targets
+.PHONY: k8s-test
+
+k8s-test:
+	@echo "🧪 Test de la stack Kafka sur Kubernetes..."
+	bash $(SCRIPTS_DIR)/test-kafka-k8s.sh
+	@echo ""
+	@echo "✅ Tous les tests sont passés !"
+	@echo "📖 Pour déployer frontend et backend : voir DEPLOY_TO_K8S.md"

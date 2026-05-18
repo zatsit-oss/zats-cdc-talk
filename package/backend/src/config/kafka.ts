@@ -3,11 +3,24 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-// Configuration de Kafka
-const kafka = new Kafka({
+// Configuration de Kafka avec support SASL/SSL (Redpanda Cloud, Confluent Cloud, etc.)
+const kafkaConfig: any = {
 	clientId: "zats-cdc-backend",
 	brokers: (process.env.KAFKA_BROKERS || "localhost:9092").split(","),
-});
+};
+
+// Ajouter SASL/SSL si les credentials sont présentes (cloud providers)
+if (process.env.KAFKA_SASL_USERNAME && process.env.KAFKA_SASL_PASSWORD) {
+	kafkaConfig.ssl = true;
+	kafkaConfig.sasl = {
+		mechanism: process.env.KAFKA_SASL_MECHANISM || "scram-sha-256",
+		username: process.env.KAFKA_SASL_USERNAME,
+		password: process.env.KAFKA_SASL_PASSWORD,
+	};
+	console.log("🔐 Kafka SASL/SSL activé");
+}
+
+const kafka = new Kafka(kafkaConfig);
 
 let producer: Producer;
 // let consumer: Consumer;
