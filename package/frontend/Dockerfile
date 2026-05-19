@@ -5,13 +5,12 @@ WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
-RUN npm ci
 
-# Copy source code
+# Copy all source files (needed before npm ci because of postinstall)
 COPY . .
 
-# Build the app
-RUN npm run build
+# Install dependencies and build
+RUN npm ci --production=false && npm run build
 
 # Production stage
 FROM nginx:alpine
