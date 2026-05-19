@@ -187,32 +187,36 @@ CMD ["node", "dist/index.js"]
 
 ## 🚀 Étape 2 : Build et Push des images Docker
 
-### Option A : Build local et push vers Docker Hub
+### ✨ Méthode automatique (recommandée pour la démo)
+
+Les images se construisent **automatiquement** à chaque push grâce à GitHub Actions !
 
 ```bash
-# Frontend
-cd package/frontend
-docker build -t votre-username/zats-frontend:latest .
-docker push votre-username/zats-frontend:latest
+# Pousser votre code sur GitHub
+git add .
+git commit -m "Deploy to CleverCloud K8s"
+git push origin feat/deploy-to-clevercloud
 
-# Backend
-cd ../backend
-docker build -t votre-username/zats-backend:latest .
-docker push votre-username/zats-backend:latest
+# Attendre 2-3 minutes, puis vérifier les images sur :
+# https://github.com/zatsit-oss/zats-cdc-talk/pkgs/container/zats-cdc-talk%2Ffrontend
+# https://github.com/zatsit-oss/zats-cdc-talk/pkgs/container/zats-cdc-talk%2Fbackend
 ```
 
-### Option B : Utiliser GitHub Container Registry
+Les images sont disponibles sur :
+- `ghcr.io/zatsit-oss/zats-cdc-talk/frontend:latest`
+- `ghcr.io/zatsit-oss/zats-cdc-talk/backend:latest`
+
+### 🛠️ Méthode manuelle (si besoin)
+
+Si vous voulez builder localement :
 
 ```bash
-# Login
-echo $GITHUB_TOKEN | docker login ghcr.io -u USERNAME --password-stdin
+# 1. Login à GitHub Container Registry
+echo $GITHUB_TOKEN | docker login ghcr.io -u votre-username --password-stdin
 
-# Build et push
-docker build -t ghcr.io/zatsit-oss/zats-frontend:latest package/frontend
-docker push ghcr.io/zatsit-oss/zats-frontend:latest
-
-docker build -t ghcr.io/zatsit-oss/zats-backend:latest package/backend
-docker push ghcr.io/zatsit-oss/zats-backend:latest
+# 2. Build et push (ou utilisez le Makefile)
+make docker-build
+make docker-push
 ```
 
 ## ☸️ Étape 3 : Déployer sur Kubernetes
@@ -240,7 +244,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: votre-username/zats-backend:latest  # Remplacez par votre image
+        image: ghcr.io/zatsit-oss/zats-cdc-talk/backend:latest
         ports:
         - containerPort: 3000
         env:
@@ -302,7 +306,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: votre-username/zats-frontend:latest  # Remplacez par votre image
+        image: ghcr.io/zatsit-oss/zats-cdc-talk/frontend:latest
         ports:
         - containerPort: 80
 ---
@@ -322,8 +326,12 @@ spec:
 ### Déployer
 
 ```bash
+# Déployer l'application
 kubectl apply -f k8s/backend-deployment.yaml
 kubectl apply -f k8s/frontend-deployment.yaml
+
+# Ou utilisez le Makefile
+make k8s-deploy-app
 ```
 
 ## 🌐 Étape 4 : Obtenir l'URL publique
@@ -396,16 +404,31 @@ kubectl logs -f deployment/frontend
 
 # Logs Kafka
 kubectl logs -f deployment/kafka1
+### Méthode automatique
+
+```bash
+# 1. Modifier votre code
+# 2. Commit et push
+git add .
+git commit -m "Update backend"
+git push
+
+# 3. Attendre le build (2-3 min), puis redémarrer les pods
+make k8s-restart
+# ou
+kubectl rollout restart deployment/backend
+kubectl rollout restart deployment/frontend
 ```
 
-## 🔄 Étape 6 : Mettre à jour l'application
+### Méthode manuelle
 
 ```bash
 # 1. Build nouvelle version
-docker build -t votre-username/zats-backend:v2 package/backend
-docker push votre-username/zats-backend:v2
+docker build -t ghcr.io/zatsit-oss/zats-cdc-talk/backend:latest package/backend
+docker push ghcr.io/zatsit-oss/zats-cdc-talk/backend:latest
 
-# 2. Mettre à jour le deployment
+# 2. Redémarrer pour utiliser la nouvelle image
+kubectl rollout restartdeployment
 kubectl set image deployment/backend backend=votre-username/zats-backend:v2
 
 # 3. Suivre le rollout

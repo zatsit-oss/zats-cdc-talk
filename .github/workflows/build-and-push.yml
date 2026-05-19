@@ -1,0 +1,59 @@
+name: Build and Push Docker Images
+
+on:
+  push:
+    branches:
+      - main
+      - feat/deploy-to-clevercloud
+    paths:
+      - "package/frontend/**"
+      - "package/backend/**"
+      - ".github/workflows/build-and-push.yml"
+  workflow_dispatch: # Permet de lancer manuellement
+
+env:
+  REGISTRY: ghcr.io
+  FRONTEND_IMAGE: ghcr.io/${{ github.repository }}/frontend
+  BACKEND_IMAGE: ghcr.io/${{ github.repository }}/backend
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./package/frontend
+          push: true
+          tags: |
+            ${{ env.FRONTEND_IMAGE }}:latest
+            ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+
+      - name: Build and push Backend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./package/backend
+          push: true
+          tags: |
+            ${{ env.BACKEND_IMAGE }}:latest
+            ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+
+      - name: Summary
+        run: |
+          echo "✅ Images pushed successfully!"
+          echo "Frontend: ${{ env.FRONTEND_IMAGE }}:latest"
+          echo "Backend: ${{ env.BACKEND_IMAGE }}:latest"
