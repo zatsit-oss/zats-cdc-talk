@@ -5,7 +5,7 @@ metadata:
   labels:
     app: backend
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: backend
@@ -14,6 +14,8 @@ spec:
       labels:
         app: backend
     spec:
+      imagePullSecrets:
+      - name: github-registry
       containers:
       - name: backend
         image: ghcr.io/zatsit-oss/zats-cdc-talk/backend:latest
@@ -27,15 +29,15 @@ spec:
           value: "production"
         # PostgreSQL
         - name: DB_HOST
-          value: "postgresql"
+          value: "postgresql-pokesky"
         - name: DB_PORT
-          value: "5432"
+          value: "5434"
         - name: DB_USER
-          value: "postgres"
+          value: "pikachu"
         - name: DB_PASSWORD
-          value: "postgres"
+          value: "zatsit"
         - name: DB_NAME
-          value: "zats_cdc"
+          value: "pokesky"
         # Kafka (accès direct interne)
         - name: KAFKA_BROKERS
           value: "kafka1:19092"
