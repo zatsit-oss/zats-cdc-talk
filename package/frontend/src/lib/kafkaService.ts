@@ -1,25 +1,39 @@
 import axios from 'axios';
 import {Post} from "../data/posts";
 
-// En production, utiliser le proxy nginx (/api)
-// En dev, utiliser le backend directement
-const isProduction = typeof window !== 'undefined' && !window.location.hostname.includes('localhost');
-const API_URL = isProduction ? '/api' : 'http://localhost:3000/api';
+const KAFKA_TOPIC = 'post-creation';
+// URL configurable via variable d'environnement
+// En production, passe par le proxy nginx à /kafka
+const KAFKA_REST_PROXY_URL = import.meta.env.VITE_KAFKA_PROXY_URL || '/kafka';
 
 /**
- * Publishes a post creation event to Kafka via the backend API.
+ * Publishes a post creation event to the Kafka topic via REST Proxy.
  * @param {Object} post - The post data to publish.
+ * @param {string} post.id - The ID of the post.
+ * @param {string} post.author.name - The name of the author.
+ * @param {string} post.author.handle - The handle of the author.
+ * @param {string} post.content - The content of the post.
+ * @param {string} post.createdAt - The creation timestamp of the post.
  * @returns {Promise<void>} - A promise that resolves when the event is published.
  */
 export async function publishPostCreationEvent(post: Post) {
   try {
-    await axios.post(`${API_URL}/posts`, post, {
+    const payload = {
+      records: [
+        {
+          key: post.id,
+          value: post,
+        },
+      ],
+    };
+
+    await axios.post(`${KAFKA_REST_PROXY_URL}/topics/${KAFKA_TOPIC}`, payload, {
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/vnd.kafka.json.v2+json',
       },
     });
 
-    console.log(`Post creation event published via backend API`);
+    console.log(`Post creation event published to topic ${KAFKA_TOPIC} via ${KAFKA_REST_PROXY_URL}`);
   } catch (error) {
     console.error('Failed to publish post creation event:', error);
     throw error;

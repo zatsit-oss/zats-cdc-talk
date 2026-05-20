@@ -18,11 +18,13 @@ spec:
       - name: github-registry
       containers:
       - name: backend
-        image: ghcr.io/zatsit-oss/zats-cdc-talk/backend:latest
+        image: ghcr.io/zatsit-oss/zats-cdc-talk/backend-cdc:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 3000
         env:
+        - name: MODE
+          value: "CDC" # ou "DCD"
         - name: PORT
           value: "3000"
         - name: NODE_ENV

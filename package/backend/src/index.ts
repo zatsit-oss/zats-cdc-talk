@@ -58,22 +58,6 @@ app.get("/health", (_req, res) => {
 	res.status(200).json({ status: "ok", mode, serviceType });
 });
 
-// API endpoint pour créer un post (envoi à Kafka)
-app.post("/api/posts", async (req, res) => {
-	try {
-		const post = req.body;
-		console.log("📝 Nouveau post reçu:", post);
-
-		// Envoyer le post à Kafka via le producer
-		await sendMessage("post-creation", post, post.id);
-
-		res.status(201).json({ success: true, message: "Post envoyé à Kafka" });
-	} catch (error) {
-		console.error("❌ Erreur lors de l'envoi du post:", error);
-		res.status(500).json({ success: false, error: "Erreur serveur" });
-	}
-});
-
 // Port d'écoute
 const PORT = process.env.PORT || 3000;
 

@@ -9,21 +9,9 @@ const kafkaConfig: any = {
 	brokers: (process.env.KAFKA_BROKERS || "localhost:9092").split(","),
 };
 
-// Ajouter SASL/SSL si les credentials sont présentes (cloud providers)
-if (process.env.KAFKA_SASL_USERNAME && process.env.KAFKA_SASL_PASSWORD) {
-	kafkaConfig.ssl = true;
-	kafkaConfig.sasl = {
-		mechanism: process.env.KAFKA_SASL_MECHANISM || "scram-sha-256",
-		username: process.env.KAFKA_SASL_USERNAME,
-		password: process.env.KAFKA_SASL_PASSWORD,
-	};
-	console.log("🔐 Kafka SASL/SSL activé");
-}
-
 const kafka = new Kafka(kafkaConfig);
 
 let producer: Producer;
-// let consumer: Consumer;
 
 // Initialisation du producteur Kafka
 export const initializeKafkaProducer = async () => {
