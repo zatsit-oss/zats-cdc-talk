@@ -31,7 +31,7 @@ spec:
         - name: DB_HOST
           value: "postgresql-pokesky"
         - name: DB_PORT
-          value: "5434"
+          value: "5432"
         - name: DB_USER
           value: "pikachu"
         - name: DB_PASSWORD

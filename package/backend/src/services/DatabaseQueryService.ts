@@ -27,8 +27,8 @@ export class DatabaseQueryService {
 			);
 
 			const id = action.id;
-
-			mimicNetworkLatency(() => this.execute(id));
+			this.execute(id);
+			// mimicNetworkLatency(() => this.execute(id));
 		} catch (error) {
 			console.error("Erreur lors du traitement de l'action Kafka:", error);
 		}

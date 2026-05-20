@@ -8,11 +8,11 @@ dotenv.config();
 export const AppDataSource = new DataSource({
 	type: "postgres",
 	host: process.env.DB_HOST || "localhost",
-	port: parseInt(process.env.DB_PORT || "5433"),
+	port: parseInt(process.env.DB_PORT || "5432"),
 	username: process.env.DB_USER || "pikachu",
 	password: process.env.DB_PASSWORD || "zatsit",
 	database: process.env.DB_NAME || "pokesky",
-	synchronize: process.env.NODE_ENV !== "production", // Synchronisation automatique du schéma en développement
+	synchronize: true, // Ne pas utiliser en production
 	logging: ["info"],
 	entities: [path.join(__dirname, "../models/**/*.{js,ts}")],
 	migrations: [path.join(__dirname, "../migrations/**/*.{js,ts}")],
