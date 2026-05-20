@@ -12,7 +12,7 @@ export class DatabaseQueryService {
 
 	constructor(mode: "CDC" | "DCD") {
 		this.mode = mode;
-		this.topic = "post-creation";
+		this.topic = mode === "DCD" ? "post-creation" : "pokesky.public.post";
 	}
 
 	async consume(payload: EachMessagePayload) {
@@ -26,9 +26,8 @@ export class DatabaseQueryService {
 				action,
 			);
 
-			const id = action.id;
-			this.execute(id);
-			// mimicNetworkLatency(() => this.execute(id));
+			const id = this.mode === "DCD" ? action.id : action.after.id;
+			mimicNetworkLatency(() => this.execute(id));
 		} catch (error) {
 			console.error("Erreur lors du traitement de l'action Kafka:", error);
 		}

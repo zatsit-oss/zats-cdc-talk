@@ -14,7 +14,7 @@ on:
 env:
   REGISTRY: ghcr.io
   FRONTEND_IMAGE: ghcr.io/${{ github.repository }}/frontend
-  BACKEND_IMAGE: ghcr.io/${{ github.repository }}/backend
+  BACKEND_IMAGE: ghcr.io/${{ github.repository }}/backend-cdc
 
 jobs:
   build-and-push:
