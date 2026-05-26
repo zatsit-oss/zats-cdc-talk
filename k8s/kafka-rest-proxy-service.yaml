@@ -8,9 +8,10 @@ metadata:
     io.kompose.service: kafka-rest-proxy
   name: kafka-rest-proxy
 spec:
-  ports:
-    - name: "8082"
-      port: 8082
-      targetPort: 8082
+  type: NodePort
   selector:
-    io.kompose.service: kafka-rest-proxy
+    app: kafka-rest-proxy
+  ports:
+  - port: 8082
+    targetPort: 8082
+    nodePort: 30082   # accessible sur 10.101.0.5:30082 via le Network Group
