@@ -1,18 +1,18 @@
 # Kubernetes — CDC Talk Stack
 
-Ce dossier contient les manifests Kubernetes de la stack complète (Zookeeper, Kafka, Schema Registry, Kafka Connect, Kafka REST Proxy, PostgreSQL x2, Conduktor Console).
+This folder contains the Kubernetes manifests for the complete stack (Zookeeper, Kafka, Schema Registry, Kafka Connect, Kafka REST Proxy, PostgreSQL x2, Conduktor Console, Backend).
 
-> Les fichiers ont été générés avec [kompose](https://kompose.io/) depuis `package/kafka/full-stack.yml`, puis corrigés manuellement.
+> The files were generated with [kompose](https://kompose.io/) from `package/kafka/full-stack.yml`, then manually corrected.
 
 ---
 
-## Démarrage
+## Quick Start
 
 ```bash
 kubectl apply -f k8s/
 ```
 
-### Ordre de démarrage des dépendances
+### Dependency Startup Order
 
 ```
 zoo1
@@ -23,49 +23,49 @@ zoo1
         └── conduktor-console
 postgresql
   └── conduktor-console
-postgresql-pokesky   (source CDC Debezium)
+postgresql-pokesky   (Debezium CDC source)
+backend
 ```
 
-Kubernetes gère les redémarrages automatiquement — les pods en `CrashLoopBackOff` au démarrage finissent par se stabiliser une fois leurs dépendances prêtes.
+Kubernetes handles restarts automatically — pods in `CrashLoopBackOff` at startup eventually stabilize once their dependencies are ready.
 
 ---
 
-## Arrêt
+## Shutdown
 
 ```bash
 kubectl delete -f k8s/
 ```
 
-> ⚠️ Ne pas faire `kubectl delete pod <nom>` : le Deployment recrée immédiatement un nouveau pod. Il faut supprimer le Deployment lui-même (ou tout via `delete -f k8s/`).
+> ⚠️ Don't do `kubectl delete pod <name>`: the Deployment immediately recreates a new pod. You need to delete the Deployment itself (or everything via `delete -f k8s/`).
 
 ---
 
-## Recréer le cluster from scratch
+## Recreate Cluster from Scratch
 
 ```bash
-# Lister les clusters
+# List clusters
 clever k8s list
 
-# Supprimer le cluster
-clever k8s delete <cluster-id-ou-nom>
+# Delete cluster
+clever k8s delete <cluster-id-or-name>
 
-# Recréer (ALL_IN_ONE par défaut, prêt en ~1 min)
-clever k8s create <nom> --watch
+# Recreate (ALL_IN_ONE by default, ready in ~1 min)
+clever k8s create <name> --watch
 
-# Récupérer le nouveau kubeconfig
-clever k8s get-kubeconfig <nom> > ~/.kube/config
+# Get the new kubeconfig
+clever k8s get-kubeconfig <name> > ~/.kube/config
 
-# Tout redéployer
-kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v3.7/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
-kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v3.7/docs/content/reference/dynamic-configuration/kubernetes-crd-rbac.yml
 kubectl apply -f k8s/
 ```
 
-## Accès aux services depuis le navigateur
+---
 
-Les services sont de type `ClusterIP` (internes au cluster). Pour y accéder en local, utiliser le **port-forward** :
+## Accessing Services from Browser
 
-| Service | Commande | URL |
+Services are of type `ClusterIP` (internal to the cluster). To access them locally, use **port-forward**:
+
+| Service | Command | URL |
 |---|---|---|
 | Conduktor Console | `kubectl port-forward svc/conduktor-console 8080:8080` | http://localhost:8080 |
 | Kafka Connect API | `kubectl port-forward svc/kafka-connect 8083:8083` | http://localhost:8083 |
@@ -73,345 +73,97 @@ Les services sont de type `ClusterIP` (internes au cluster). Pour y accéder en 
 | Schema Registry | `kubectl port-forward svc/kafka-schema-registry 8081:8081` | http://localhost:8081 |
 | PostgreSQL Pokesky | `kubectl port-forward svc/postgresql-pokesky 5434:5434` | `localhost:5434` |
 
-> Ajouter `&` à la fin pour lancer en arrière-plan : `kubectl port-forward svc/conduktor-console 8080:8080 &`
+> Add `&` at the end to launch in background: `kubectl port-forward svc/conduktor-console 8080:8080 &`
 
 ---
 
-## Commandes utiles
+## Useful Commands
 
-### État des pods
+### Pod Status
 ```bash
-kubectl get pods                        # liste tous les pods et leur statut
-kubectl get pods -w                     # watch en temps réel
-kubectl get deployments                 # liste les deployments
-kubectl get svc                         # liste les services
-kubectl get pvc                         # liste les volumes persistants
+kubectl get pods                        # list all pods and their status
+kubectl get pods -w                     # watch in real-time
+kubectl get deployments                 # list deployments
+kubectl get svc                         # list services
+kubectl get pvc                         # list persistent volumes
 ```
 
-### Diagnostiquer un pod en erreur
+### Diagnose a Failed Pod
 ```bash
-kubectl describe pod <nom-du-pod>       # détails + Events (cause des erreurs)
-kubectl logs <nom-du-pod>               # logs du conteneur
-kubectl logs <nom-du-pod> --previous    # logs du conteneur avant un crash
-kubectl logs -f <nom-du-pod>            # logs en temps réel (follow)
+kubectl describe pod <pod-name>         # details + Events (error causes)
+kubectl logs <pod-name>                 # container logs
+kubectl logs <pod-name> --previous      # logs from container before a crash
+kubectl logs -f <pod-name>              # logs in real-time (follow)
 ```
 
-### Redémarrer un pod
+### Restart a Pod
 ```bash
-kubectl rollout restart deployment <nom-du-deployment>
+kubectl rollout restart deployment <deployment-name>
 ```
 
-### Entrer dans un pod
+### Enter a Pod
 ```bash
-kubectl exec -it <nom-du-pod> -- bash
+kubectl exec -it <pod-name> -- bash
 ```
 
-### Appliquer une modification d'un seul fichier
+### Apply a Single File Modification
 ```bash
 kubectl apply -f k8s/kafka-connect-deployment.yaml
 ```
 
 ---
 
-## Architecture réseau
+## Network Architecture
 
-Dans Kubernetes, les services se parlent via leur **nom DNS** (= le `name` du Service).
-Exemple : `kafka-connect` contacte Kafka via `kafka1:19092`.
+In Kubernetes, services communicate via their **DNS name** (= the Service's `name`).
+Example: `kafka-connect` contacts Kafka via `kafka1:19092`.
 
-| Service | DNS interne | Port |
+| Service | Internal DNS | Port |
 |---|---|---|
 | Zookeeper | `zoo1` | 2181 |
-| Kafka broker | `kafka1` | 19092 (interne) |
+| Kafka broker | `kafka1` | 19092 (internal) |
 | Schema Registry | `kafka-schema-registry` | 8081 |
 | Kafka Connect | `kafka-connect` | 8083 |
 | Kafka REST Proxy | `kafka-rest-proxy` | 8082 |
 | PostgreSQL (Conduktor) | `postgresql` | 5432 |
 | PostgreSQL (Pokesky/CDC) | `postgresql-pokesky` | 5434 → 5432 |
 | Conduktor Console | `conduktor-console` | 8080 |
+| Backend | `backend` | 3000 |
 
 ---
 
-## Persistence des données
+## Data Persistence
 
-> ⚠️ Les volumes ont été désactivés pour compatibilité avec les clusters locaux sans StorageClass configurée.
+The following PersistentVolumeClaims are configured for data persistence:
 
-**Les données sont perdues au redémarrage des pods.** Pour réactiver la persistence, il faudra :
-1. Configurer un `StorageClass` dans ton cluster local (ex: `minikube addons enable default-storageclass`)
-2. Réajouter les `volumeMounts` et `volumes` dans les deployments concernés
-3. Corriger le chemin PGDATA pour PostgreSQL : `/var/lib/postgresql/data`
+- `conduktor-data-persistentvolumeclaim.yaml` — Conduktor Console data
+- `kafka-connect-claim0-persistentvolumeclaim.yaml` — Kafka Connect data
+- `pg-data-persistentvolumeclaim.yaml` — PostgreSQL (Conduktor) data
+- `pg-data-pokesky-persistentvolumeclaim.yaml` — PostgreSQL (Pokesky/CDC) data
 
----
-
-## Traefik — Ingress Controller (URL fixe pour le frontend)
-
-### Pourquoi Traefik ?
-
-Actuellement le service `frontend` est de type `LoadBalancer` : Clever Cloud lui attribue une IP publique qui **change à chaque redémarrage du cluster**.
-
-Avec Traefik :
-- **Un seul** LoadBalancer (Traefik) absorbe tout le trafic entrant
-- Le service `frontend` passe en `ClusterIP` (interne au cluster uniquement)
-- Traefik route les requêtes vers le bon service selon des règles (`IngressRoute`)
-- L'adresse publique à retenir est celle du LoadBalancer **Traefik**, plus stable car elle est indépendante des redémarrages des pods applicatifs
-
-> **IPs publiques dédiées sur Clever Cloud** : contrairement à AWS ou GCP qui fournissent un DNS hostname (`.elb.amazonaws.com`, etc.), Clever Cloud assigne **2 adresses IP publiques dédiées** par service `LoadBalancer`. Ces IPs sont réservées à ton service et restent stables tant que le service existe — tu crées un enregistrement DNS `A` pointant directement vers elles.
->
-> Récupère-les avec : `kubectl get svc traefik -o jsonpath='{.status.loadBalancer.ingress[*].ip}'`
->
-> ⚠️ Par défaut, chaque organisation Clever Cloud dispose d'un quota de **2 IPs publiques** (= 1 seul `LoadBalancer`). Vérifie ta consommation avec `clever k8s quota`.
+> Note: Ensure your cluster has a configured StorageClass for automatic volume provisioning. For local clusters (e.g., minikube), enable with: `minikube addons enable default-storageclass`
 
 ---
 
-### Étape 1 — Installer les CRDs et le RBAC Traefik
+## Files in this Directory
 
-Les Custom Resource Definitions (CRD) permettent d'utiliser les ressources `IngressRoute`, `Middleware`, etc.
+**Core Infrastructure:**
+- `zoo1-deployment.yaml`, `zoo1-service.yaml` — Zookeeper
+- `kafka1-deployment.yaml`, `kafka1-service.yaml` — Kafka broker
+- `kafka-schema-registry-deployment.yaml`, `kafka-schema-registry-service.yaml` — Schema Registry
+- `kafka-connect-deployment.yaml`, `kafka-connect-service.yaml` — Kafka Connect
+- `kafka-rest-proxy-deployment.yaml`, `kafka-rest-proxy-service.yaml` — Kafka REST Proxy
 
-```bash
-# CRDs Traefik (IngressRoute, Middleware, TraefikService…)
-kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v3.7/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
+**Databases:**
+- `postgresql-deployment.yaml`, `postgresql-service.yaml` — PostgreSQL (Conduktor)
+- `postgresql-pokesky-deployment.yaml`, `postgresql-pokesky-service.yaml` — PostgreSQL (Pokesky/CDC source)
 
-# RBAC (droits du ServiceAccount Traefik pour lire les ressources Kubernetes)
-kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v3.7/docs/content/reference/dynamic-configuration/kubernetes-crd-rbac.yml
-```
+**Applications:**
+- `conduktor-console-deployment.yaml`, `conduktor-console-service.yaml` — Conduktor Console
+- `backend-deployment.yaml` — Backend application
 
----
-
-### Étape 2 — Déployer Traefik
-
-Créer le fichier `k8s/traefik-deployment.yaml` :
-
-```yaml
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: traefik
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: traefik
-  labels:
-    app: traefik
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: traefik
-  template:
-    metadata:
-      labels:
-        app: traefik
-    spec:
-      serviceAccountName: traefik
-      containers:
-      - name: traefik
-        image: traefik:v3.7
-        args:
-          - --providers.kubernetesCRD
-          - --entryPoints.web.address=:80
-        ports:
-        - name: web
-          containerPort: 80
-        resources:
-          requests:
-            memory: "64Mi"
-            cpu: "50m"
-          limits:
-            memory: "128Mi"
-            cpu: "200m"
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: traefik
-spec:
-  type: LoadBalancer
-  selector:
-    app: traefik
-  ports:
-  - name: web
-    port: 80
-    targetPort: 80
-    protocol: TCP
-```
-
-```bash
-kubectl apply -f k8s/traefik-deployment.yaml
-```
-
----
-
-### Étape 3 — Modifier le service frontend
-
-Dans `k8s/frontend-deployment.yaml`, changer le type du Service de `LoadBalancer` en `ClusterIP` :
-
-```yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: frontend
-spec:
-  type: ClusterIP   # <-- était LoadBalancer
-  selector:
-    app: frontend
-  ports:
-  - port: 80
-    targetPort: 80
-    protocol: TCP
-```
-
-```bash
-kubectl apply -f k8s/frontend-deployment.yaml
-```
-
----
-
-### Étape 4 — Créer l'IngressRoute pour le frontend
-
-Créer le fichier `k8s/traefik-ingressroute-frontend.yaml` :
-
-```yaml
-apiVersion: traefik.io/v1alpha1
-kind: IngressRoute
-metadata:
-  name: frontend
-spec:
-  entryPoints:
-    - web
-  routes:
-  - match: PathPrefix(`/`)
-    kind: Rule
-    services:
-    - name: frontend
-      port: 80
-```
-
-> Si tu disposes d'un nom de domaine, remplace `PathPrefix(`/`)` par `Host(`frontend.ton-domaine.com`)` pour ne router que les requêtes arrivant sur ce domaine.
-
-```bash
-kubectl apply -f k8s/traefik-ingressroute-frontend.yaml
-```
-
----
-
-### Étape 5 — Récupérer l'URL publique de Traefik
-
-```bash
-kubectl get svc traefik
-```
-
-La colonne `EXTERNAL-IP` affiche les **2 IPs publiques dédiées** assignées par Clever Cloud. Ce sont des IPs stables — pointe ton enregistrement DNS `A` vers l'une d'elles.
-
-```bash
-# Affichage lisible
-kubectl get svc traefik
-
-# Juste les IPs (pour scripting ou copier-coller)
-kubectl get svc traefik -o jsonpath='{.status.loadBalancer.ingress[*].ip}'
-```
-
----
-
-### Étape 6 (optionnelle) — HTTPS avec Let's Encrypt
-
-> **Prérequis** : un nom de domaine dont tu contrôles le DNS, pointant vers l'adresse externe de Traefik (enregistrement `A` vers l'IP ou `CNAME` vers le hostname DNS Clever Cloud).
-
-Mettre à jour le Deployment Traefik pour activer Let's Encrypt (challenge HTTP-01) :
-
-```yaml
-containers:
-- name: traefik
-  image: traefik:v3.7
-  args:
-    - --providers.kubernetesCRD
-    - --entryPoints.web.address=:80
-    - --entryPoints.websecure.address=:443
-    # Redirection HTTP → HTTPS
-    - --entryPoints.web.http.redirections.entryPoint.to=websecure
-    - --entryPoints.web.http.redirections.entryPoint.scheme=https
-    # Let's Encrypt
-    - --certificatesResolvers.letsencrypt.acme.httpChallenge=true
-    - --certificatesResolvers.letsencrypt.acme.httpChallenge.entryPoint=web
-    - --certificatesResolvers.letsencrypt.acme.email=ton-email@example.com   # ← à adapter
-    - --certificatesResolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
-  ports:
-  - name: web
-    containerPort: 80
-  - name: websecure
-    containerPort: 443
-  volumeMounts:
-  - name: letsencrypt
-    mountPath: /letsencrypt
-volumes:
-- name: letsencrypt
-  emptyDir: {}   # ⚠️ remplacer par un PVC (voir ci-dessous) pour ne pas perdre les certificats au redémarrage
-```
-
-> **Qu'est-ce qu'un PVC ?**
-> Un **PVC** (PersistentVolumeClaim) est une demande de stockage persistant dans Kubernetes. Contrairement à `emptyDir` dont le contenu est effacé dès que le pod redémarre, un PVC survit aux redémarrages.
->
-> Ici, sans PVC, Traefik perd le fichier `acme.json` (certificats Let's Encrypt) à chaque redémarrage et doit en redemander de nouveaux — ce qui est limité à **5 certificats par semaine** par domaine chez Let's Encrypt.
->
-> Pour utiliser un PVC, créer d'abord `k8s/traefik-letsencrypt-pvc.yaml` :
-> ```yaml
-> apiVersion: v1
-> kind: PersistentVolumeClaim
-> metadata:
->   name: traefik-letsencrypt
-> spec:
->   accessModes:
->     - ReadWriteOnce
->   resources:
->     requests:
->       storage: 128Mi
-> ```
-> Puis remplacer dans le Deployment :
-> ```yaml
-> volumes:
-> - name: letsencrypt
->   persistentVolumeClaim:
->     claimName: traefik-letsencrypt
-> ```
-
-Ajouter le port `443` dans le Service `traefik` :
-
-```yaml
-ports:
-- name: web
-  port: 80
-  targetPort: 80
-- name: websecure
-  port: 443
-  targetPort: 443
-```
-
-Mettre à jour l'IngressRoute pour utiliser `websecure` :
-
-```yaml
-apiVersion: traefik.io/v1alpha1
-kind: IngressRoute
-metadata:
-  name: frontend
-spec:
-  entryPoints:
-    - websecure
-  routes:
-  - match: Host(`frontend.ton-domaine.com`)
-    kind: Rule
-    services:
-    - name: frontend
-      port: 80
-  tls:
-    certResolver: letsencrypt
-```
-
----
-
-### Architecture réseau mise à jour avec Traefik
-
-```
-Internet
-  └── Traefik (LoadBalancer — IP/hostname stable Clever Cloud)
-        └── IngressRoute: PathPrefix(/) ou Host(...)
-              └── frontend (ClusterIP — interne uniquement)
-```
+**Persistent Volumes:**
+- `conduktor-data-persistentvolumeclaim.yaml`
+- `kafka-connect-claim0-persistentvolumeclaim.yaml`
+- `pg-data-persistentvolumeclaim.yaml`
+- `pg-data-pokesky-persistentvolumeclaim.yaml`

@@ -62,40 +62,37 @@ The `Makefile` provides the following commands:
   ```
   This command stops all running containers (connect).
 
-## 🌐 Deployment on CleverCloud Kubernetes
+## 🌐 Deployment on CleverCloud
 
-### 🎯 Solution recommandée : Déploiement complet dans K8s
+### Architecture
 
-**Déployez Frontend + Backend + Kafka dans le même cluster Kubernetes.**
+Pour rappel, notre démo se compose d'un frontend, d'un backend comportant 2 services et d'une stack Kafka Connect avec Conduktor Console.
 
-**Avantages :**
-- ✅ **1 seul LoadBalancer** nécessaire (pour le frontend)
-- ✅ **Quota par défaut suffisant** (2 IPs publiques = 1 LoadBalancer)
-- ✅ **Performance maximale** (réseau interne K8s)
-- ✅ **Sécurité optimale** (Kafka et backend non exposés publiquement)
-- ✅ **Pas de problème de quota IP**
+Notre frontend est déployée sur Clevercloud en tant qu'application Docker.
+Les autres composants sont déployés sur un cluster Kubernetes CKE. Vous pourrez retrouver tous les fichiers de déploiement dans le dossier [k8s](./k8s)
 
-**📖 Guide complet : [DEPLOY_TO_K8S.md](./DEPLOY_TO_K8S.md)** ⭐
+### Pré-requis
 
-### Commandes rapides
+Pour build et déployer notre démo tel quel sur Clevercloud, il vous faudra :
+- un compte Github: pour faire tourner la pipeline qui va construire les images Docker du frontend et du backend et les pousser sur un registry github
+- un Personal Access Token avec les scopes read:packages
+- un compte Clevercloud
+- le CLI Clevercloud avec votre compte loggué
+- kubectl
+- jq
 
-```bash
-# Tester la stack Kafka
-make k8s-test
+### Déploiement de la démo
 
-# Déployer frontend et backend (après création des Dockerfiles)
+1. TODO frontend...
+1. Lancer le script [build-pokesky-cke-cluster](./scripts/build-pokesky-cke-cluster.sh) et suivez les instructions
+
+TODO
+
 kubectl apply -f k8s/backend-deployment.yaml
-kubectl apply -f k8s/frontend-deployment.yaml
 
-# Obtenir l'URL publique du frontend
-kubectl get service frontend
-```
+------
 
-### 📚 Documentation
 
-- **[DEPLOY_TO_K8S.md](./DEPLOY_TO_K8S.md)** - Guide complet de déploiement ⭐
-- [FIX_KAFKA_CONNECTION_K8S.md](./FIX_KAFKA_CONNECTION_K8S.md) - Correction du bug "Expected 1 brokers but found only 0"
-- [k8s/README.md](./k8s/README.md) - Configuration Kubernetes de la stack Kafka
 
 ### How to configure Kafka Connect and create a Postgresql connector ?
 
