@@ -1,9 +1,10 @@
-import type { Repository, EntityTarget, FindOptionsWhere } from "typeorm";
+import type { Repository, EntityTarget, FindOptionsWhere, ObjectLiteral } from "typeorm";
 import { AppDataSource } from "../config/database";
 import { emitToClients } from "../config/socket";
 import { Post } from "../models/Post";
 import type { EachMessagePayload } from "kafkajs";
 import { initializeKafkaConsumer, subscribeToTopic } from "../config/kafka";
+import { mimicNetworkLatency } from "../utils";
 
 export class DatabaseQueryService {
 	readonly mode: "CDC" | "DCD";
@@ -11,7 +12,8 @@ export class DatabaseQueryService {
 
 	constructor(mode: "CDC" | "DCD") {
 		this.mode = mode;
-		this.topic = this.mode === "DCD" ? "post-creation" : "pokesky.public.post";
+		// this.topic =  "post-creation"; For DCD
+		this.topic = mode === "DCD" ? "post-creation" : "pokesky.public.post";
 	}
 
 	async consume(payload: EachMessagePayload) {
@@ -24,17 +26,10 @@ export class DatabaseQueryService {
 				`[📢 BroadcastService] Message reçu du topic Kafka ${this.topic}:`,
 				action,
 			);
-			const n = Math.random();
 
-			const id = this.mode === "CDC" ? action.after.id : action.id;
-
-			if (n < 0.3) {
-				setTimeout(() => {
-					this.execute(id);
-				}, 500);
-			} else {
-				this.execute(id);
-			}
+			// const id = action.id; // For DCD
+			const id = this.mode === "DCD" ? action.id : action.after.id;
+			mimicNetworkLatency(() => this.execute(id));
 		} catch (error) {
 			console.error("Erreur lors du traitement de l'action Kafka:", error);
 		}
@@ -68,7 +63,7 @@ export class DatabaseQueryService {
 	 * @param entity Entité TypeORM
 	 * @returns Repository pour l'entité
 	 */
-	private getRepository<T>(entity: EntityTarget<T>): Repository<T> {
+	private getRepository<T extends ObjectLiteral>(entity: EntityTarget<T>): Repository<T> {
 		return AppDataSource.getRepository(entity);
 	}
 
@@ -78,7 +73,7 @@ export class DatabaseQueryService {
 	 * @param criteria Critères de recherche
 	 * @returns Entité trouvée ou null
 	 */
-	async findOne<T>(
+	async findOne<T extends ObjectLiteral>(
 		entity: EntityTarget<T>,
 		criteria: FindOptionsWhere<T>,
 	): Promise<T | null> {

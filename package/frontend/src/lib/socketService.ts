@@ -14,8 +14,15 @@ class SocketService {
 		// Vérifier si import.meta.env existe avant d'essayer d'y accéder
 		const env: MinimalEnv =
 			typeof import.meta !== "undefined" ? import.meta.env : {};
-		this.url = env.VITE_SOCKET_URL || "http://localhost:3000";
-		console.log("this.url", this.url);
+
+		// En production (pas localhost), utiliser le même domaine (proxy nginx)
+		// En dev, utiliser l'URL configurée ou localhost
+		const isProduction = typeof window !== 'undefined' && !window.location.hostname.includes('localhost');
+		this.url = isProduction
+			? window.location.origin
+			: (env.VITE_SOCKET_URL || "http://localhost:3000");
+
+		console.log("Socket.IO URL:", this.url);
 	}
 
 	connect(): void {

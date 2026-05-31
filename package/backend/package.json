@@ -2,6 +2,7 @@
 	"name": "zats-cdc-backend",
 	"version": "0.0.1",
 	"private": true,
+	"main": "dist/index.js",
 	"scripts": {
 		"build": "tsc",
 		"start": "node dist/index.js",

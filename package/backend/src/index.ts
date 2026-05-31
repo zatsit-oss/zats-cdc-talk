@@ -4,7 +4,7 @@ import type { Consumer } from "kafkajs";
 import dotenv from "dotenv";
 import { initializeDatabase } from "./config/database";
 import { initializeSocketIO } from "./config/socket";
-import { initializeKafkaProducer, shutdownKafka } from "./config/kafka";
+import { initializeKafkaProducer, shutdownKafka, sendMessage } from "./config/kafka";
 import { DatabaseActionService } from "./services/DatabaseActionService";
 import { DatabaseQueryService } from "./services/DatabaseQueryService";
 
@@ -17,6 +17,9 @@ const mode: "DCD" | "CDC" =
 		: process.env.MODE === "CDC"
 			? "CDC"
 			: "DCD";
+
+type ServiceType = "action" | "query" | "both";
+const serviceType: ServiceType = (process.env.SERVICE_TYPE as ServiceType) || "both";
 
 // ASCII Art pour afficher le mode
 console.log("+-----------------------------------------+");
@@ -38,6 +41,8 @@ if (mode === "CDC") {
 	console.log('|  8888888P"   "Y8888P"  8888888P"      |');
 }
 console.log("+-----------------------------------------+");
+console.log(`|  Service Type: ${serviceType.toUpperCase().padEnd(28)} |`);
+console.log("+-----------------------------------------+");
 
 // Services
 const dbActionService = new DatabaseActionService();
@@ -48,6 +53,11 @@ const app = express();
 app.use(express.json());
 const server = http.createServer(app);
 
+// Health check endpoint pour Kubernetes
+app.get("/health", (_req, res) => {
+	res.status(200).json({ status: "ok", mode, serviceType });
+});
+
 // Port d'écoute
 const PORT = process.env.PORT || 3000;
 
@@ -57,22 +67,40 @@ async function startServer() {
 		// Initialiser la connexion à la base de données
 		await initializeDatabase();
 
-		// Initialiser Socket.IO
-		const io = initializeSocketIO(server);
+		// Variables pour stocker les consumers
+		const consumers: Consumer[] = [];
+
+		// Initialiser Socket.IO seulement si le service query est actif
+		if (serviceType === "query" || serviceType === "both") {
+			const io = initializeSocketIO(server);
+			console.log("✅ Socket.IO initialisé");
+		}
 
 		// Initialiser Kafka
 		await initializeKafkaProducer();
 
-		const actionConsumer = await dbActionService.initialize();
-		const queryConsumer = await dbQueryService.initialize();
+		// Initialiser les services selon SERVICE_TYPE
+		if (serviceType === "action" || serviceType === "both") {
+			const actionConsumer = await dbActionService.initialize();
+			consumers.push(actionConsumer);
+			console.log("✅ DatabaseActionService initialisé");
+		}
+
+		if (serviceType === "query" || serviceType === "both") {
+			const queryConsumer = await dbQueryService.initialize();
+			consumers.push(queryConsumer);
+			console.log("✅ DatabaseQueryService initialisé");
+		}
 
 		// Démarrer le serveur HTTP
 		server.listen(PORT, () => {
 			console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
+			console.log(`📡 Mode: ${mode}`);
+			console.log(`🔧 Service: ${serviceType}`);
 		});
 
 		// Gestion de l'arrêt propre du serveur
-		setupGracefulShutdown([actionConsumer, queryConsumer]);
+		setupGracefulShutdown(consumers);
 	} catch (error) {
 		console.error("Erreur lors du démarrage du serveur:", error);
 		process.exit(1);

@@ -3,14 +3,15 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-// Configuration de Kafka
-const kafka = new Kafka({
+// Configuration de Kafka avec support SASL/SSL (Redpanda Cloud, Confluent Cloud, etc.)
+const kafkaConfig: any = {
 	clientId: "zats-cdc-backend",
 	brokers: (process.env.KAFKA_BROKERS || "localhost:9092").split(","),
-});
+};
+
+const kafka = new Kafka(kafkaConfig);
 
 let producer: Producer;
-// let consumer: Consumer;
 
 // Initialisation du producteur Kafka
 export const initializeKafkaProducer = async () => {

@@ -3,7 +3,8 @@ import {Post} from "../data/posts";
 
 const KAFKA_TOPIC = 'post-creation';
 // URL configurable via variable d'environnement
-const KAFKA_REST_PROXY_URL = import.meta.env.VITE_KAFKA_PROXY_URL || 'http://localhost:8082';
+// En production, passe par le proxy nginx à /kafka
+const KAFKA_REST_PROXY_URL = import.meta.env.VITE_KAFKA_PROXY_URL || '/kafka';
 
 /**
  * Publishes a post creation event to the Kafka topic via REST Proxy.

@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: kafka-schema-registry
+  name: kafka-schema-registry
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: kafka-schema-registry
+  template:
+    metadata:
+      labels:
+        io.kompose.service: kafka-schema-registry
+    spec:
+      containers:
+        - env:
+            - name: SCHEMA_REGISTRY_HOST_NAME
+              value: kafka-schema-registry
+            - name: SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS
+              value: PLAINTEXT://kafka1:19092
+            - name: SCHEMA_REGISTRY_LISTENERS
+              value: http://0.0.0.0:8081
+          image: confluentinc/cp-schema-registry:7.8.0
+          name: kafka-schema-registry
+          ports:
+            - containerPort: 8081
+              protocol: TCP
+      hostname: kafka-schema-registry
+      restartPolicy: Always

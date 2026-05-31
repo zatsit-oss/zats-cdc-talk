@@ -2,5 +2,6 @@
 .idea
 dist
 .env
+.env.conduktor
 *.log
 .env.ngrok.generated
