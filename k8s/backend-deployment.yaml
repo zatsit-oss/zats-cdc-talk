@@ -19,7 +19,6 @@ spec:
       containers:
       - name: backend
         image: ghcr.io/zatsit-oss/zats-cdc-talk/backend:latest
-        # image: ghcr.io/zatsit-oss/zats-cdc-talk/backend-cdc:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 3000

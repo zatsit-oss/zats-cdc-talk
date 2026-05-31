@@ -12,6 +12,7 @@ export class DatabaseQueryService {
 
 	constructor(mode: "CDC" | "DCD") {
 		this.mode = mode;
+		// this.topic =  "post-creation"; For DCD
 		this.topic = mode === "DCD" ? "post-creation" : "pokesky.public.post";
 	}
 
@@ -26,6 +27,7 @@ export class DatabaseQueryService {
 				action,
 			);
 
+			// const id = action.id; // For DCD
 			const id = this.mode === "DCD" ? action.id : action.after.id;
 			mimicNetworkLatency(() => this.execute(id));
 		} catch (error) {
